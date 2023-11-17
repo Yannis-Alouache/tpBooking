@@ -1,3 +1,7 @@
 <?php
-    include("./view/index.php");
+    session_start();
+
+    include("./router.php");
+
+    new Router;
 ?>
