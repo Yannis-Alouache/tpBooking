@@ -21,7 +21,8 @@ class Router {
     //J'ai pensé à ta route Yannis :)
     $this->get("/register","RegisterController@render");
     $this->get("/login","LoginController@render");
-    $this->get("/dashboard/user/reservation","ReservationHistoryController@render");
+    $this->get("/dashboard/{id}/reservations","ReservationHistoryController@listBooking");
+    $this->get("/dashboard/reservations","ReservationHistoryController@listBooking");
 
 
     //Routes exemples:

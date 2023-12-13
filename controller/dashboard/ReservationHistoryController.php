@@ -16,6 +16,10 @@ class ReservationHistoryController extends Controller {
         $this->footer = new Footer();
     }
 
+    public function listBooking() {
+        return $this->render();
+    }
+
     public function render() {
         echo $this->navigation->render() . $this->reservationHistory->render() . $this->footer->render();
     } 
