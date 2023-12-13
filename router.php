@@ -2,6 +2,7 @@
 
 include("./controller/RegisterController.php");
 include("./controller/LoginController.php");
+include("./controller/dashboard/ReservationHistoryController.php");
 include("./controller/TestController.php");
 
 class Router {
@@ -20,6 +21,7 @@ class Router {
     //J'ai pensé à ta route Yannis :)
     $this->get("/register","RegisterController@render");
     $this->get("/login","LoginController@render");
+    $this->get("/dashboard/user/reservation","ReservationHistoryController@render");
 
 
     //Routes exemples:
