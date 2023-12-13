@@ -1,6 +1,7 @@
 <?php
 
 include("./controller/RegisterController.php");
+include("./controller/LoginController.php");
 include("./controller/TestController.php");
 
 class Router {
@@ -18,6 +19,8 @@ class Router {
     /** Placez vos routes ici ;) */
     //J'ai pensé à ta route Yannis :)
     $this->get("/register","RegisterController@render");
+    $this->get("/login","LoginController@render");
+
 
     //Routes exemples:
     $this->get("/test/{id}/hey","TestController@hello");
