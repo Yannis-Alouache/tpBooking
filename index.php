@@ -1,7 +1,6 @@
 <?php
-    session_start();
-
-    include("./router.php");
-
-    new Router;
+    include "./vendor/autoload.php";
+    include "./app/App.php";
+    
+    new App();
 ?>

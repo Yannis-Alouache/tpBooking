@@ -1,0 +1,8 @@
+{
+    "name": "yrf/tp_booking",
+    "description": "Le projet de Yannis, Raphaël et Félix de booking",
+    "type": "project",
+    "require": {
+        "spatie/ignition": "^1.11"
+    }
+}
