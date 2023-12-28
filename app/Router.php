@@ -2,7 +2,7 @@
 
 include("./controller/Controller.php");
 
-class Routeur
+class Router
 {
     private string $url;
     private string $httpMethod;
@@ -160,5 +160,3 @@ class Routeur
         $this->httpMethod = $method;
     }
 }
-
-?>

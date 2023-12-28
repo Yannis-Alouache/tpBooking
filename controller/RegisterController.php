@@ -6,6 +6,8 @@ include_once("view/Navigation.php");
 include_once("view/Footer.php");
 include_once("view/RegisterPage.php");
 
+include_once("model/TestEntity.php");
+
 class RegisterController extends Controller
 {
     public Navigation $navigation;
