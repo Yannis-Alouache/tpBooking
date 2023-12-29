@@ -35,10 +35,9 @@ interface ORMInterface
     /**
      * Vas mettre à jour une ligne dans la BDD.
      * @param array $attributs Les attributs à mettre à jour. Format clef => valeur.
-     * @param bool $updateTimestamps Si oui, ou non, il faut automatiquement mettre à jour les created_at et updated_at dans la BDD.
      * @return bool Si la mise à jour a bien réussi ou non
      */
-    public function update(array $attributs, bool $updateTimestamps = true): bool;
+    public function update(array $attributs): bool;
 
     /**
      * Vas supprimer une ligne en utilisant les méthodes de l'interface.
@@ -66,14 +65,15 @@ interface ORMInterface
      */
     public function delete(): bool;
 
-    /**
-     * Effectue une jointure SQL dans la BDD.
-     * @param string $table La table à joindre.
-     * @param string $tableCol La colonne de la table qui joint l'autre table.
-     * @param string $joinedCol La colonne de la table à joindre
-     * @param string $joinType Le type de jointure SQL. Par défaut "INNER JOIN"
-     */
-    public function join(string $table, string $tableCol, string $joinedCol, string $joinType="INNER JOIN");
+	/**
+	 * Effectue une jointure SQL dans la BDD.
+	 * @param string $table La table de base.
+	 * @param string $tableCol La colonne de la table de base.
+	 * @param string $joinedTable Le nom de la table jointe
+	 * @param string $joinedCol La colonne de la table à joindre
+	 * @param string $joinType Le type de jointure SQL. Par défaut "INNER JOIN"
+	 */
+    public function join(string $table, string $tableCol, string $joinedTable, string $joinedCol, string $joinType="INNER JOIN");
 
     /**
      * Créer une clause ORDER BY en SQL.
@@ -85,8 +85,9 @@ interface ORMInterface
     /**
      * Insère une section crue de requête SQL dans la requête.
      * @param string $queryPart La partie de requête SQL crue à insérer
+	 * @deprecated
      */
-    public function raw(string $queryPart);
+    //public function raw(string $queryPart);
 
     // --------- Executors ---------
     /**
@@ -97,10 +98,11 @@ interface ORMInterface
     public function all(array $colonnes=array()): array;
 
     /**
-     * Exécute la requête SQL contruite et retourne les résultats
+     * Exécute la requête SQL construite et retourne les résultats
+	 * @param array $colonnes Une liste de colonnes à retourner. Une valeur vide va retourner toutes les colonnes.
      * @return array Retourne un tableau vide s'il n'y a aucune ligne dans la table du modèle
      */
-    public function get(): array;
+    public function get(array $colonnes = array()): array;
 
     /**
      * Exécute la requêtre SQL construite et prend automatiquement le premier résultat
@@ -118,13 +120,13 @@ interface ORMInterface
      * Exécute la requêtre SQL construite et prend automatiquement le premier résultat par rapport à la date de création (le moins vieux)
      * @return array|null
      */
-    public function latest(): array|null;
+    public function latest(string $column): array;
 
     /**
      * Exécute la requêtre SQL construite et prend automatiquement le dernier résultat par rapport à la date de création (le plus vieux)
      * @return array|null
      */
-    public function oldest(): array|null;
+    public function oldest(string $column): array;
 
     /**
      * Vide entièrement la table du modèle
@@ -144,7 +146,7 @@ interface ORMInterface
     /**
      * Exécute la requête SQL et retourne le maximum (calculé par SQL) d'une colonne donnée
      */
-    public function max(string $colonne);
+    public function max(string $colonne, string $as);
 
     /**
      * Exécute la requête SQL et retourne le minimum (calculé par SQL) d'une colonne donnée

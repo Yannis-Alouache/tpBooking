@@ -2,8 +2,8 @@
 
 include_once("./controller/Controller.php");
 
-include_once("view/Navigation.php");
-include_once("view/Footer.php");
+include_once("view/navigation.php");
+include_once("view/footer.php");
 include_once("view/RegisterPage.php");
 
 include_once("model/TestEntity.php");
