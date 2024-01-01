@@ -20,7 +20,7 @@ class UserManagerController extends Controller {
         return $this->render();
     }
 
-    public function render() {
-        echo $this->navigation->render() . $this->userList->render() . $this->footer->render();
+    public function render($context = []) {
+        echo $this->navigation->render($context) . $this->userList->render($context) . $this->footer->render($context);
     } 
 }

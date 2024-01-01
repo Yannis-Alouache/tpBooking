@@ -2,7 +2,7 @@
 include_once("Template.php");
 
 class Footer extends Template {
-    public function render() : string {
+    public function render($context) : string {
         return '
                     <footer class="dark:bg-gray-900">
                     <div class="w-full max-w-screen-xl mx-auto p-4 md:py-8">

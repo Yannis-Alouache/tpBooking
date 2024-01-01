@@ -24,8 +24,8 @@ class LoginController extends Controller
         $this->footer = new Footer();
     }
 
-    public function render() {
-        echo $this->navigation->render() . $this->loginPage->render() . $this->footer->render();
+    public function render($context = []) {
+        echo $this->navigation->render($context) . $this->loginPage->render($context) . $this->footer->render($context);
     }
     public function testGet()
     {

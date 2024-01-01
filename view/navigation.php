@@ -2,7 +2,7 @@
     include("Template.php");
 
     class Navigation extends Template {
-        public function render() : string {
+        public function render($context) : string {
             return '
             <!doctype html>
                 <html>

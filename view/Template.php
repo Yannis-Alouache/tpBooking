@@ -1,5 +1,5 @@
 <?php
 
 abstract class Template {
-    abstract public function render() : string;
+    abstract public function render($context) : string;
 }
