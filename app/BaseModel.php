@@ -49,6 +49,62 @@ class BaseModel implements ORMInterface
 		)
 	);
 
+	/**
+	 * Array qui sert d'ordre aux instructions SQL et pour construire le query SQL.
+	 * Se constitue ainsi :
+	 * - la clef = le nom de l'instruction.
+	 * - Valeur = autre array avec les propriétés suivantes : <br/>
+	 * 		- type : le type de données qui sera retenu : array si on peut y mettre plusieurs bouts (ex : WHERE est un array car on peut y mettre plusieurs conditions SQL) et string si on ne peut y mettre qu'une seule valeur (ex : LIMIT de SQL). <br/>
+	 * 		- sql : quoi mettre avant le contenu de l'instruction (WHERE, ORDER BY, LIMIT, etc.) <br/>
+	 * 		- builder : le nom de la fonction qui va être appellé afin de 'compiler' le contenu de la requête SQL. <br/>
+	 *
+	 * @var array
+	 */
+	private array $sqlOrder = array(
+		"insert" => array(
+			"type" => "array",
+			"builder" => "buildInsert",
+		),
+		"update" => array(
+			"type" => "array",
+			"builder" => "buildUpdates",
+		),
+		"join" => array(
+			"type" => "array",
+			"sql" => "JOIN",
+			"builder" => "buildJoints",
+		),
+		"where" => array(
+			"type" => "array",
+			"sql" => "WHERE",
+			"builder" => "buildWhere",
+		),
+		"groupby" => array(
+			"type" => "array",
+			"sql" => "GROUP BY",
+			"builder" => "buildGroupBy",
+		),
+		"orderby" => array(
+			"type" => "array",
+			"sql" => "ORDER BY",
+			"builder" => "buildOrderBy",
+		),
+		"limit" => array(
+			"type" => "string",
+			"sql" => "LIMIT",
+			"builder" => "buildLimit",
+		),
+	);
+
+	private array $arraySQLMethods = array(
+		"where",
+		"join",
+		"insert",
+		"update",
+		"orderby",
+		"groupby",
+	);
+
 	/** @var Connect Singleton de connection à la BDD */
 	private Connect $conn;
 
@@ -161,20 +217,20 @@ class BaseModel implements ORMInterface
 		return true;
 	}
 
-	public function update(array $attributs): bool
+	public function update(array $attributs): BaseModel
 	{
 		$this->queryBits->method = "UPDATE";
 		$this->queryBits->from = "SET";
 
 		$this->queryBits->update = $attributs;
-		return false;
+		return $this;
 	}
 
-	public function delete(): bool
+	public function delete(): BaseModel
 	{
 		$this->queryBits->method = "DELETE";
 
-		return false;
+		return $this;
 	}
 
 	public function join(string $table, string $tableCol, string $joinedTable , string $joinedCol, string $joinType="INNER JOIN"): BaseModel
@@ -210,22 +266,15 @@ class BaseModel implements ORMInterface
 
 	// --------- Executors ---------
 
-	public function all(array $colonnes=array()): array
+	public function all(): array
 	{
 		$this->queryBits->limit = null;
 		return $this->exec();
 	}
 
-	public function get(array $colonnes = array()): array
+	public function get(): array
 	{
 		return $this->exec();
-		/* WIP gl
-		return array_filter($res,function($row) use ($colonnes)
-		{
-			return (in_array($row, $colonnes));
-			//A finir
-		});
-		*/
 	}
 
 	public function first(): array
@@ -301,9 +350,6 @@ class BaseModel implements ORMInterface
 	 * @param string $col La colonne
 	 * @param string|null $as Si la colonne doit avoir un nom. Optionnel
 	 * @return void
-	 *
-	 * //TODO v
-	 * //TO FIX
 	 */
 	private function funcSQL(string $func, string $col, string $as = null): void
 	{
@@ -408,19 +454,28 @@ class BaseModel implements ORMInterface
 
 	/**
 	 * Vas exécuter le query, en construisant la requête
-	 * @return array
+	 * @return array|null
 	 */
-	public function exec(): array
+	public function exec(): array|null
 	{
-		$this->prepareQuery();
-
 		$this->buildQuery();
 
 		//Connection à la BDD en singleton
 		$this->conn = Connect::getInstance();
 
-		//Retour du résultat
-		return array();
+		try {
+			//Connection à la BDD
+			$this->conn->connect();
+			$res = $this->conn->excecute($this->query);
+		} catch(Exception $e) {
+
+		} finally {
+			//Déconnexion dans tous les cas
+			$this->conn->disconnect();
+
+			//Retour du résultat
+			return $res ?? null;
+		}
 	}
 
 	/**
@@ -429,89 +484,66 @@ class BaseModel implements ORMInterface
 	 */
 	private function buildQuery(): void
 	{
-
-		//Prise de l'ordre des bouts de query
-		$orders = $this->methodOrder[$this->getQBits("method")];
-
+		//Si une requête SQL doit être faite avant la requête demandée
 		if(isset($this->queryBits->before))
 		{
 			$this->query = $this->queryBits->before;
 		}
 
-		//Itération dans l'ordre des bouts
+		//Prise de l'ordre des bouts de query
+		//Cette étape va prendre les bouts de query correspondants afin d'initier la requête SQL.
+		//Puisque le tableau $methodOrder contient l'ordre des bouts en fonction de l'opération demandé
+		//(SELECT, INSERT, UPDATE ou DELETE), je peux itérer dans ces orders pour construire le début de la requête SQL
+		//avec les informations qu'il me faut.
+		$orders = $this->methodOrder[$this->getQBits("method")];
+
+		//Itération dans les bouts du type de requête
 		foreach ($orders as $index => $order)
 		{
+			//Prise du bout de requête SQL
 			$toInsert = $this->getQBits($order);
 
 			if(isset($toInsert))
 			{
 				$this->insertQ($this->getQBits($order));
 			}
-
 		}
 
-		//Autres méthodes
-		if(!empty($this->queryBits->insert))
+		foreach ($this->getSqlOrder() as $bit => $types)
 		{
-			$buildInsert = $this->buildInsert($this->queryBits->insert);
-			$this->insertQ($buildInsert);
+			//Si la partie de SQL n'est pas vide
+			if(!empty($this->queryBits->{$bit}))
+			{
+				//Si le type de la partie SQL est un array
+				if(isset($types["builder"]))
+				{
+					/* NOTE:
+					Pour une raison inconnue, PHP décide de transformer l'array des paramètres à construire de ce format
+					array(1) { [0]=> array(2) { ["cond"]=> NULL ["clause"]=> string(4) "id=1" } } (normal, ce que je veux)
+					à ça (quand un seul autre array est donné dans l'array):
+					array(1) { [0]=> array(2) { ["cond"]=> NULL ["clause"]=> string(4) "id=1" } }
+					Voici donc pourquoi il ne faut pas utiliser call_user_fund_array ici. (Merci PHP :) )
+					$builtPart = call_user_func_array(array($this,$types["builder"]),$this->queryBits->{$bit});
+					*/
+
+					//Alors on passe cette partie d'instruction aux builders
+					$builtPart = $this->{$types["builder"]}($this->queryBits->{$bit});
+					$this->insertQ($builtPart);
+				}
+				//Sinon, on met directement la partie de requête SQL dans la query
+				else {
+					$this->insertQ($this->queryBits->{$bit});
+				}
+			}
 		}
 
-		//Si c'est une update
-		if(!empty($this->queryBits->update))
-		{
-			$buildUpdate = $this->buildUpdates($this->queryBits->update);
-			$this->insertQ($buildUpdate);
-		}
-
-		//TODO: Mettre le tableau $arraySQLMethods en global et l'utiliser dans cette partie pour appeler les méthodes correspondantes.
-		//Optimisation / 20 mdr
-		if(!empty($this->queryBits->join))
-		{
-			$builtJoints = $this->buildJoints($this->queryBits->join);
-			$this->insertQ($builtJoints);
-		}
-
-		if(!empty($this->queryBits->where))
-		{
-			$this->insertQ("WHERE");
-			$builtWhere = $this->buildWhere($this->queryBits->where);
-
-			$this->insertQ($builtWhere);
-		}
-
-		if(!empty($this->queryBits->groupby))
-		{
-			$this->insertQ("GROUP BY");
-			$builtGroup = $this->buildGroupBy($this->queryBits->groupby);
-
-			$this->insertQ($builtGroup);
-
-		}
-
-		if(!empty($this->queryBits->orderby))
-		{
-			$this->insertQ("ORDER BY");
-			$buildOrder = $this->buildOrderBy($this->queryBits->orderby);
-			$this->insertQ($buildOrder);
-		}
-
-		if(isset($this->queryBits->limit) && is_numeric($this->queryBits->limit))
-		{
-			$this->insertQ("LIMIT ".$this->getQBits("limit"));
-		}
-
+		//Comma pour séparer les instructions.
 		$this->query .= ";";
 
 		if(isset($this->queryBits->after))
 		{
 			$this->query .= $this->queryBits->after;
 		}
-	}
-
-	private function prepareQuery()
-	{
-
 	}
 
 	protected function getQBits(string $clef): string|null
@@ -529,31 +561,25 @@ class BaseModel implements ORMInterface
 		else {
 			$this->query .= " ".$q;
 		}
-
 	}
 
 	protected function insertQBit(string $clef, mixed $value): void
 	{
 		//Méthodes SQL où plusieurs closes sont possibles
-		$arraySQLMethods = array(
-			"where",
-			"join",
-			"insert",
-			"update",
-			"orderby",
-			"groupby",
-		);
-
-		if(in_array($clef,$arraySQLMethods))
+		if(in_array($clef,$this->arraySQLMethods))
 		{
 			$this->queryBits->{$clef}[] = $value;
 		} else {
-
 			if($clef === "before" || $clef === "after")
 			{
 				$this->queryBits->{$clef} .= $value;
 			} else {
-				$this->queryBits->{$clef} .= ", ".$value;
+				if(!isset($this->queryBits->{$clef}))
+				{
+					$this->queryBits->{$clef} = $value;
+				} else {
+					$this->queryBits->{$clef} .= ", " . $value;
+				}
 			}
 
 		}
@@ -583,5 +609,23 @@ class BaseModel implements ORMInterface
 	protected function setTablePrimaryKey(string|null $key): void
 	{
 		$this->primaryKey = $key ?? null;
+	}
+
+	/**
+	 * Donne le tableau SQLOrder.
+	 * Si la clef n'est pas indiqué, alors tout le tableau sera retourné.
+	 * Si la clef est indiqué, alors seule la clef et son contenu sera retourné
+	 *
+	 * @param string|null $clef
+	 * @return array|array[]|string[]
+	 */
+	public function getSqlOrder(string $clef = null): array
+	{
+		if(isset($clef))
+		{
+			return $this->sqlOrder[$clef];
+		}
+
+		return $this->sqlOrder;
 	}
 }

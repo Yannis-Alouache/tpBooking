@@ -37,7 +37,7 @@ interface ORMInterface
      * @param array $attributs Les attributs à mettre à jour. Format clef => valeur.
      * @return bool Si la mise à jour a bien réussi ou non
      */
-    public function update(array $attributs): bool;
+    public function update(array $attributs);
 
     /**
      * Vas supprimer une ligne en utilisant les méthodes de l'interface.
@@ -63,7 +63,7 @@ interface ORMInterface
      * ```
      * @return bool Si la supression a réussi ou non
      */
-    public function delete(): bool;
+    public function delete();
 
 	/**
 	 * Effectue une jointure SQL dans la BDD.
@@ -92,17 +92,15 @@ interface ORMInterface
     // --------- Executors ---------
     /**
      * Retourne toutes les lignes du modèle
-     * @param array $colonnes Les colonnes à retourner. Si vide, alors toutes les colonnes seront retournées
      * @return array Retourne un tableau vide s'il n'y a aucune ligne dans la table du modèle
      */
-    public function all(array $colonnes=array()): array;
+    public function all(): array;
 
     /**
      * Exécute la requête SQL construite et retourne les résultats
-	 * @param array $colonnes Une liste de colonnes à retourner. Une valeur vide va retourner toutes les colonnes.
-     * @return array Retourne un tableau vide s'il n'y a aucune ligne dans la table du modèle
+	 * @return array Retourne un tableau vide s'il n'y a aucune ligne dans la table du modèle
      */
-    public function get(array $colonnes = array()): array;
+    public function get(): array;
 
     /**
      * Exécute la requêtre SQL construite et prend automatiquement le premier résultat

@@ -9,10 +9,11 @@ trait builders
 	 */
 	public function buildWhere(array $whereArr): string
 	{
-		$finalWhere = "";
+		$finalWhere = "WHERE";
 
 		foreach ($whereArr as $where)
 		{
+
 			$insertWhere = "";
 
 			$cond = $where["cond"] ?? null;
@@ -27,8 +28,7 @@ trait builders
 
 			$finalWhere .= (!empty($finalWhere) ? " " : "") . $insertWhere;
 		}
-
-		return $finalWhere;
+		return trim($finalWhere);
 	}
 
 	/**
@@ -87,11 +87,16 @@ trait builders
 			$finalOrder[] = "" . $order["col"] . " " . $order["mode"];
 		}
 
-		return implode(", ",$finalOrder);
+		return "ORDER BY " . implode(", ",$finalOrder);
 	}
 
 	public function buildGroupBy(array $groupArr): string
 	{
-		return implode(", ",$groupArr);
+		return "GROUP¨BY " . implode(", ",$groupArr);
+	}
+
+	public function buildLimit(string|int $limit): string
+	{
+		return "LIMIT " . $limit;
 	}
 }

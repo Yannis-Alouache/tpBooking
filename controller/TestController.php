@@ -16,11 +16,11 @@ class TestController extends Controller
 	public function tester(): void
 	{
 		$et = new TestEntity();
-		$et
-			->find(1)
-			->get(["nom"])
-			;
-		dump($et);
+		$a = $et
+			->where("id","1")
+			->exec();
+
+		dump($a);
 	}
 
 	public function render()
