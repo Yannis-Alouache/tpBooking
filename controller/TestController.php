@@ -4,7 +4,7 @@ include_once("./controller/Controller.php");
 
 class TestController extends Controller
 {
-	private const ROUTES = array(
+	public const ROUTES = array(
 		"@GET" => "tester",
 	);
 
@@ -13,17 +13,30 @@ class TestController extends Controller
 		return TestController::ROUTES;
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	public function tester(): void
 	{
 		$et = new TestEntity();
-		$a = $et
-			->where("id","1")
-			->exec();
 
+		$a = $et
+			->orderBy("id")
+			->where("id","1")
+			->distinct()
+			->get()
+		;
+
+		echo "<h6>RES:</h6>";
+
+		dump($et->getQuery());
 		dump($a);
+
+		echo "<h1>--------------------------------------------------</h1>";
 	}
 
 	public function render()
 	{
+
 	}
 }

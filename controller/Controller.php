@@ -26,4 +26,6 @@ abstract class Controller // implements RoutesInterface
 	{
 		return Controller::$routes;
 	}
+
+	abstract public function getInnerRoutes(): array;
 }

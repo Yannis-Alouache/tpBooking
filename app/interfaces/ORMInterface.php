@@ -30,7 +30,7 @@ interface ORMInterface
      * @param array $attributs Le tableau d'attributs à insérer. Format clef-valeur. La clef du tableau est la colonne.
      * @return bool Si l'insertion a bien réussi ou non
      */
-    public function create(array $attributs): bool;
+    public function create(array $attributs);
 
     /**
      * Vas mettre à jour une ligne dans la BDD.
@@ -90,53 +90,58 @@ interface ORMInterface
     //public function raw(string $queryPart);
 
     // --------- Executors ---------
-    /**
-     * Retourne toutes les lignes du modèle
-     * @return array Retourne un tableau vide s'il n'y a aucune ligne dans la table du modèle
-     */
-    public function all(): array;
+	/**
+	 * Exécute la requête en enlevant la clause 'LIMIT'
+	 * @return array|bool|stdClass|null Retourne un tableau vide s'il n'y a aucune ligne dans la table du modèle
+	 */
+    public function all(): array|bool|stdClass|null;
 
-    /**
-     * Exécute la requête SQL construite et retourne les résultats
-	 * @return array Retourne un tableau vide s'il n'y a aucune ligne dans la table du modèle
-     */
-    public function get(): array;
+	/**
+	 * Exécute la requête SQL construite et retourne les résultats
+	 * @return array|bool|stdClass|null Retourne un tableau vide s'il n'y a aucune ligne dans la table du modèle
+	 */
+    public function get(): array|bool|stdClass|null;
 
-    /**
-     * Exécute la requêtre SQL construite et prend automatiquement le premier résultat
-     * @return array|null
-     */
-    public function first(): array|null;
+	/**
+	 * Exécute la requête SQL construite et prend automatiquement le premier résultat de la requête
+	 * @return array|bool|stdClass|null
+	 */
+    public function first(): array|bool|stdClass|null;
 
-    /**
-     * Exécute la requêtre SQL construite et prend automatiquement le dernier résultat de la requête
-     * @return array|null
-     */
-    public function last(): array|null;
+	/**
+	 * Exécute la requête SQL construite et prend automatiquement le dernier résultat de la requête
+	 * @return array|bool|stdClass|null
+	 */
+    public function last(): array|bool|stdClass|null;
 
-    /**
-     * Exécute la requêtre SQL construite et prend automatiquement le premier résultat par rapport à la date de création (le moins vieux)
-     * @return array|null
-     */
-    public function latest(string $column): array;
+	/**
+	 * Exécute la requête SQL construite et prend automatiquement le premier résultat par rapport
+	 * à la colonne ou la clef primaire (si indiquée) ou la date de création (created_at) (le moins vieux)
+	 * @param string $column La colonne sur laquelle va être basé l'opération latest
+	 * @return array|bool|stdClass|null
+	 */
+    public function latest(string $column): array|bool|stdClass|null;
 
-    /**
-     * Exécute la requêtre SQL construite et prend automatiquement le dernier résultat par rapport à la date de création (le plus vieux)
-     * @return array|null
-     */
-    public function oldest(string $column): array;
+	/**
+	 * Exécute la requête SQL construite et prend automatiquement le dernier résultat par rapport
+	 * à la colonne ou la clef primaire (si indiquée) ou la date de création (created_at) (le plus vieux)
+	 * @param string $column La colonne sur laquelle va être basé l'opération oldest
+	 * @return array|bool|stdClass|null
+	 */
+    public function oldest(string $column): array|bool|stdClass|null;
 
     /**
      * Vide entièrement la table du modèle
-     * @return bool Si l'opération c'est bien passée.
+     * @return bool Si l'opération s'est bien passée.
      */
-    public function truncate(string $tableName): bool;
+    public function truncate(): bool;
 
     /**
      * Donne les colonnes à sélectionner lors du SELECT de SQL
      * @param array $colonnes Les colonnes à sélectionner lors du SELECT de sql
+	 * @param bool $keepOld S'il faut garder les anciennes colonnes sélectionnées. Défault à false
      */
-    public function select(array $colonnes);
+    public function select(array $colonnes, bool $keepOld);
 
 
     // --------- Executors (sql funcs) ---------

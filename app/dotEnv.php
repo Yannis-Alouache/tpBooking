@@ -10,7 +10,8 @@ class dotEnv
     }
 
     private function parseEnv(): void
-    {//Itération dans le fichier .env
+    {
+		//Itération dans le fichier .env
         foreach (file(".env") as $line) {
             //prise de la clef
             $key = explode("=",$line)[0];

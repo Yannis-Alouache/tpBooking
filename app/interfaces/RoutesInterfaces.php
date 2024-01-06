@@ -1,18 +1,18 @@
 <?php
 
 /**
- * oblige les controlleurs à implémenter la fonction getInnerRoutes, sinon le routeur ne marche pas.
- * @Annotation Créer une erreur fatale quand on donne l'implémentation à la class Controller.
+ * Oblige les controllers à implémenter la fonction getInnerRoutes, sinon le routeur ne marche pas.
+ * Créer une erreur fatale quand on donne l'implémentation à la classe Controller.
  */
 interface RoutesInterface
 {
     /**
-     * vas retourner les sous-routes du controlleur. Contenu de la fonction à copier-coller:
+     * vas retourner les sous-routes du controller. Contenu de la fonction à copier-coller:
      * ```php
      * <?php
      * public function getInnerRoutes(): array
      * {
-     *      return controlleur::ROUTES
+     *      return controller::ROUTES
      * }
      * ?>
      * ```

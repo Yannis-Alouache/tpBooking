@@ -7,28 +7,42 @@ trait builders
 	 * @param array $whereArr
 	 * @return string
 	 */
-	public function buildWhere(array $whereArr): string
+	public function buildWhere(array $whereArr): array
 	{
-		$finalWhere = "WHERE";
+		$sql = "WHERE";
+		$params = array();
 
 		foreach ($whereArr as $where)
 		{
+			$column = $where["col"];
+			$value = $where["value"];
+			$operator = $where["operator"];
+			$cond = $where["cond"];
 
 			$insertWhere = "";
 
-			$cond = $where["cond"] ?? null;
-			$clause = $where["clause"];
-
-			if(!empty($cond))
+			//Si une précondition (OR, AND) est présente, alors l'insérer avec un espace
+			if(isset($cond))
 			{
 				$insertWhere .= $cond. " ";
 			}
 
-			$insertWhere .= $clause;
+			//Préparation du query SQL, avec le paramètre
+			$insertWhere .= $column;
+			$insertWhere .= " " . $operator . " ";
+			$insertWhere .= "?";
 
-			$finalWhere .= (!empty($finalWhere) ? " " : "") . $insertWhere;
+			//Mise dans les paramètres le paramètre
+			$params[] = $value;
+
+			//Mise dans la query du SQL
+			$sql .= (!empty($sql) ? " " : "") . $insertWhere;
 		}
-		return trim($finalWhere);
+
+		return [
+			"sql" => $sql,
+			"params" => $params,
+		];
 	}
 
 	/**
@@ -36,36 +50,69 @@ trait builders
 	 * @param array $insertArr
 	 * @return string
 	 */
-	public function buildInsert(array $insertArr): string
+	public function buildInsert(array $insertArr): array
 	{
-		$finalInsert = "";
+		$sql = "";
+		$params = array();
 
 		//Les colonnes concernées
 		$allCols = implode(",",array_unique(array_keys($insertArr)));
-		//Les valeurs
-		$allVals = implode(",", array_values($insertArr));
 
-		$finalInsert .= "(" . $allCols . ") VALUES (" . $allVals . ")";
+		$sql .= "(" . $allCols . ")";
+		$sql .= " VALUES (";
 
-		return $finalInsert;
+		//Itérations dans les données
+		foreach ($insertArr as $col => $value)
+		{
+			//Si les paramètres sont vides
+			if(empty($params))
+			{
+				//Alors, on met juste le ?, car il n'existe qu'un paramètre
+				$sql .= "?";
+			} else {
+				//Sinon, on insère une virgule et un espace
+				$sql .= ", ?";
+			}
+
+			//Mise dans les paramètres pour l'exec du PDO
+			$params[] = $value;
+		}
+
+		$sql .= ")";
+
+		return [
+			"sql" => $sql,
+			"params" => $params,
+		];
 	}
 
 	/**
 	 * Construit en string les valeurs de la clause UPDATE
 	 * @param array $updatesArr
-	 * @return string
+	 * @return array
 	 */
-	public function buildUpdates(array $updatesArr): string
+	public function buildUpdates(array $updatesArr): array
 	{
-		$finalUpdate = "";
+		$sql = "";
+		$params = array();
 
+		//Itérations dans les updates
 		foreach ($updatesArr as $col => $val)
 		{
-			$finalUpdate .= (!empty($finalUpdate) ? ", " : "") . $col . "=" .$val;
+			//Si la query SQL n'est pas vide, alors on insère une virgule
+			$sql .= (!empty($sql) ? ", " : "");
+			$sql .= $col;
+			$sql .= " = ";
+			$sql .= "?";
+
+			//Mise dans les paramètres les valeurs
+			$params[] = $val;
 		}
 
-		return $finalUpdate;
-
+		return [
+	 		"sql" => $sql,
+			"params" => $params,
+	 	];
 	}
 
 	/**
@@ -75,28 +122,76 @@ trait builders
 	 */
 	public function buildJoints(array $joints): string
 	{
+		//Construction des jointures
 		return implode(" ", $joints);
 	}
 
+	/**
+	 * Construit la clause ORDER BY
+	 * @param array $ordersArr
+	 * @return string
+	 */
 	public function buildOrderBy(array $ordersArr): string
 	{
+		$sql = "";
+
+		//Touts les ORDER BY
 		$finalOrder = array();
 
+		//Itérations dans les order by
 		foreach ($ordersArr as $order)
 		{
-			$finalOrder[] = "" . $order["col"] . " " . $order["mode"];
+			//Ajout dans le tableau la colonne à trier et le mode de try
+			$finalOrder[] = "" . $order["col"] . " " . $order["mode"] ?? "ASC";
 		}
 
-		return "ORDER BY " . implode(", ",$finalOrder);
+		$sql = "ORDER BY " . implode(", ",$finalOrder);
+
+		return $sql;
 	}
 
+	/**
+	 * Construit une clause GROUP BY
+	 * @param array $groupArr
+	 * @return string
+	 */
 	public function buildGroupBy(array $groupArr): string
 	{
-		return "GROUP¨BY " . implode(", ",$groupArr);
+		return "GROUP BY " . implode(", ",$groupArr);
 	}
 
-	public function buildLimit(string|int $limit): string
+	/**
+	 * Construit la clause LIMIT
+	 * @param string|int $limit
+	 * @return array
+	 */
+	public function buildLimit(string|int $limit): array
 	{
-		return "LIMIT " . $limit;
+		$sql = "";
+		$params = array();
+
+		$sql .="LIMIT ";
+		$sql .= intval($limit);
+
+
+		return [
+			"sql" => $sql,
+			"params" => $params,
+		];
+	}
+
+	public function buildAfter(string $after): string
+	{
+		return "; ".$after;
+	}
+
+	public function buildBefore(string $before): string
+	{
+		return $before."; ";
+	}
+
+	public function buildColumns(array $cols): string
+	{
+		return implode(", ", $cols);
 	}
 }
