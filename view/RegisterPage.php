@@ -19,7 +19,14 @@ class RegisterPage extends Template {
                             $context["error"] .
                         '</strong></div>';
                     
+                    if (isset($context["success"]))
+                        $html .= 
+                        '<div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-900 dark:text-green-400" role="alert"><strong>' . 
+                            $context["success"] .
+                        '</strong></div>';
+                    
                     $html .= '
+                    
                     <form class="space-y-4 md:space-y-6" action="/register" method="POST">
                         <div class="grid md:grid-cols-2 md:gap-6">
                             <div>
@@ -57,7 +64,7 @@ class RegisterPage extends Template {
                         </div>
                         <div>
                             <label for="motdepasse" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-                            <input type="motdepasse" name="motdepasse" id="motdepasse" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
+                            <input type="password" name="motdepasse" id="motdepasse" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
                         </div>
                         <div class="flex items-start">
                             <div class="flex items-center h-5">

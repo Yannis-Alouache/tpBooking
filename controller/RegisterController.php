@@ -6,7 +6,7 @@ include_once("view/navigation.php");
 include_once("view/footer.php");
 include_once("view/RegisterPage.php");
 
-include_once("model/TestEntity.php");
+include_once("model/UserModel.php");
 
 class RegisterController extends Controller
 {
@@ -35,7 +35,7 @@ class RegisterController extends Controller
     }
 
     public function validatePhoneNumber($phone) {
-        return preg_match('/^[+]?[\(\)]?[0-9]([ .-]?[0-9]){6,14}$/', $phone) === 1;
+        return preg_match('/^(?:(?:(?:\+|00)33[ ]?(?:\(0\)[ ]?)?)|0){1}[1-9]{1}([ .-]?)(?:\d{2}\1?){3}\d{2}$/', $phone) === 1;
     }
 
     // Minimum eight characters, at least one letter and one number:
@@ -53,6 +53,12 @@ class RegisterController extends Controller
         $zipCode = $_POST["cp"];
         $city = $_POST["ville"];
         $password = $_POST["motdepasse"];
+        
+        if (!isset($_POST['voyageur'])) $traveler = false;
+        else $traveler = true;
+
+        if (!isset($_POST['hote'])) $host = false;
+        else $host = true;
 
         if ( $age < 18 ) 
         {
@@ -75,20 +81,32 @@ class RegisterController extends Controller
             return $this->render(array("error" => "Vous devez saisir un code postal valide."));
         }
 
-        if ( !$this->validatePassword($password))
+        if ( !$this->validatePassword($password) )
         {
             return $this->render(array("error" => "Vous devez saisir un mot de passe valide. (1 lettre, 1 chiffre, minimum 8 caractères)"));
         }
 
-        if (!isset($_POST['hote']) && !isset($_POST['voyageur']))
+        if ( !$traveler && !$host )
         {
             return $this->render(array("error" => "Vous devez choisir entre être un hote ou un locataire."));
         }
 
-        // TO DO
-        // HANDLE CHECKBOX
-        // CONNECT TO DATABASE 
-        // INSERT DATA IN USER
+        $user = new UserModel();
+        $user->create([
+            "nom" => $lastName,
+            "prenom " => $firstName,
+            "adresse" => $adress,
+            "email" => $email,
+            "age" => $age,
+            "code_postal" => $zipCode,
+            "ville" => $city,
+            "telephone" => $phone,
+            "hote" => $host,
+            "voyageur" => $traveler,
+            "admin" => false,
+            "motdepasse" => password_hash( $password, PASSWORD_DEFAULT )
+        ])
+        ->get();
 
         return $this->render(array("success" => "Votre compte a bien été créé !"));
     }
