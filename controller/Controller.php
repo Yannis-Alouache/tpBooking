@@ -4,6 +4,7 @@
 
 include("./controller/LoginController.php");
 include("./controller/RegisterController.php");
+include("./controller/LogoutController.php");
 include("./controller/TestController.php");
 
 //Décommenter le 'implement' crée une erreur en php 8.3 (à voir si ça crashe aussi pour vous) (class controller not found) dans les autres controlleurs.
@@ -19,6 +20,7 @@ abstract class Controller // implements RoutesInterface
 	private static array $routes = array(
 		"login" => LoginController::class,
 		"register" => RegisterController::class,
+		"logout" => LogoutController::class,
 		"test" => TestController::class,
 	);
 

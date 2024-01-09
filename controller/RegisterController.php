@@ -101,9 +101,9 @@ class RegisterController extends Controller
             "code_postal" => $zipCode,
             "ville" => $city,
             "telephone" => $phone,
-            "hote" => $host,
-            "voyageur" => $traveler,
-            "admin" => false,
+            "hote" => intval($host),
+            "voyageur" => intval($traveler),
+            "admin" => intval(false),
             "motdepasse" => password_hash( $password, PASSWORD_DEFAULT )
         ])
         ->get();
