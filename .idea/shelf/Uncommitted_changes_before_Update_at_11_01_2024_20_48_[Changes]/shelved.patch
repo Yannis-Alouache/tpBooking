@@ -1,0 +1,1051 @@
+Index: controller/Controller.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\n//include(\"./app/interfaces/RoutesInterfaces.php\");\r\n\r\ninclude(\"./controller/LoginController.php\");\r\ninclude(\"./controller/RegisterController.php\");\r\ninclude(\"./controller/TestController.php\");\r\n\r\n//Décommenter le 'implement' crée une erreur en php 8.3 (à voir si ça crashe aussi pour vous) (class controller not found) dans les autres controlleurs.\r\n//Les mots ne peuvent pas décrire ma confusion.\r\n//Mettez ce que vous obtenez ici quand vous décommantez svp\r\n//Félix\t\tPHP 8.3\t\tne marche pas (class Controller not found dans Login et RegisterController)\r\n//Raph\t\tPHP 8.?\t\t\r\n//Yannis\tPHP 8.?\t\t\r\nabstract class Controller // implements RoutesInterface\r\n{\r\n\tabstract public function render();\r\n\r\n\tprivate static array $routes = array(\r\n\t\t\"login\" => LoginController::class,\r\n\t\t\"register\" => RegisterController::class,\r\n\t\t\"test\" => TestController::class,\r\n\t);\r\n\r\n\tpublic static function getRoutes(): array\r\n\t{\r\n\t\treturn Controller::$routes;\r\n\t}\r\n\r\n\tabstract public function getInnerRoutes(): array;\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/controller/Controller.php b/controller/Controller.php
+--- a/controller/Controller.php	
++++ b/controller/Controller.php	
+@@ -5,13 +5,8 @@
+ include("./controller/LoginController.php");
+ include("./controller/RegisterController.php");
+ include("./controller/TestController.php");
++include("./controller/MessagesController.php");
+ 
+-//Décommenter le 'implement' crée une erreur en php 8.3 (à voir si ça crashe aussi pour vous) (class controller not found) dans les autres controlleurs.
+-//Les mots ne peuvent pas décrire ma confusion.
+-//Mettez ce que vous obtenez ici quand vous décommantez svp
+-//Félix		PHP 8.3		ne marche pas (class Controller not found dans Login et RegisterController)
+-//Raph		PHP 8.?		
+-//Yannis	PHP 8.?		
+ abstract class Controller // implements RoutesInterface
+ {
+ 	abstract public function render();
+@@ -19,6 +14,7 @@
+ 	private static array $routes = array(
+ 		"login" => LoginController::class,
+ 		"register" => RegisterController::class,
++		"messages" => MessagesController::class,
+ 		"test" => TestController::class,
+ 	);
+ 
+Index: controller/RegisterController.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\ninclude_once(\"./controller/Controller.php\");\r\n\r\ninclude_once(\"view/navigation.php\");\r\ninclude_once(\"view/footer.php\");\r\ninclude_once(\"view/RegisterPage.php\");\r\n\r\ninclude_once(\"model/UserModel.php\");\r\n\r\nclass RegisterController extends Controller\r\n{\r\n    public Navigation $navigation;\r\n    public Footer $footer;\r\n    public RegisterPage $registerPage;\r\n\r\n    private const ROUTES = array(\r\n        \"@GET\" => \"render\",\r\n        \"@POST\" => \"doRegister\",\r\n    );\r\n\r\n    public function __construct() {\r\n        $this->navigation = new Navigation();\r\n        $this->footer = new Footer();\r\n        $this->registerPage = new RegisterPage();\r\n    }\r\n\r\n    public function render($context = []) {\r\n        echo $this->navigation->render($context) . $this->registerPage->render($context) . $this->footer->render($context);\r\n    }\r\n\r\n\r\n    public function validateEmail($email) {\r\n        return preg_match('/^[\\w-]+(\\.[\\w-]+)*@([\\w-]+\\.)+[a-zA-Z]{2,7}$/', $email) === 1;\r\n    }\r\n\r\n    public function validatePhoneNumber($phone) {\r\n        return preg_match('/^(?:(?:(?:\\+|00)33[ ]?(?:\\(0\\)[ ]?)?)|0){1}[1-9]{1}([ .-]?)(?:\\d{2}\\1?){3}\\d{2}$/', $phone) === 1;\r\n    }\r\n\r\n    // Minimum eight characters, at least one letter and one number:\r\n    public function validatePassword($password) {\r\n        return preg_match('/^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$/', $password) === 1;\r\n    }\r\n\r\n    public function doRegister() {\r\n        $firstName = $_POST[\"prenom\"];\r\n        $lastName = $_POST[\"nom\"];\r\n        $age = $_POST[\"age\"];\r\n        $email = $_POST[\"email\"];\r\n        $phone = $_POST[\"telephone\"];\r\n        $adress = $_POST[\"adresse\"];\r\n        $zipCode = $_POST[\"cp\"];\r\n        $city = $_POST[\"ville\"];\r\n        $password = $_POST[\"motdepasse\"];\r\n        \r\n        if (!isset($_POST['voyageur'])) $traveler = false;\r\n        else $traveler = true;\r\n\r\n        if (!isset($_POST['hote'])) $host = false;\r\n        else $host = true;\r\n\r\n        if ( $age < 18 ) \r\n        {\r\n            return $this->render(array(\"error\" => \"Vous devez avoir au moins 18 ans.\"));\r\n        }\r\n\r\n        if ( !$this->validateEmail($email) )\r\n        {\r\n            return $this->render(array(\"error\" => \"Vous devez saisir une adresse mail valide.\"));\r\n        }\r\n\r\n        if ( !$this->validatePhoneNumber($phone) )\r\n        {\r\n            return $this->render(array(\"error\" => \"Vous devez saisir numéro de téléphone valide.\"));\r\n\r\n        }\r\n\r\n        if ( !(strlen($zipCode) == 5) || !is_numeric($zipCode) )\r\n        {\r\n            return $this->render(array(\"error\" => \"Vous devez saisir un code postal valide.\"));\r\n        }\r\n\r\n        if ( !$this->validatePassword($password) )\r\n        {\r\n            return $this->render(array(\"error\" => \"Vous devez saisir un mot de passe valide. (1 lettre, 1 chiffre, minimum 8 caractères)\"));\r\n        }\r\n\r\n        if ( !$traveler && !$host )\r\n        {\r\n            return $this->render(array(\"error\" => \"Vous devez choisir entre être un hote ou un locataire.\"));\r\n        }\r\n\r\n        $user = new UserModel();\r\n        $user->create([\r\n            \"nom\" => $lastName,\r\n            \"prenom \" => $firstName,\r\n            \"adresse\" => $adress,\r\n            \"email\" => $email,\r\n            \"age\" => $age,\r\n            \"code_postal\" => $zipCode,\r\n            \"ville\" => $city,\r\n            \"telephone\" => $phone,\r\n            \"hote\" => $host,\r\n            \"voyageur\" => $traveler,\r\n            \"admin\" => false,\r\n            \"motdepasse\" => password_hash( $password, PASSWORD_DEFAULT )\r\n        ])\r\n        ->get();\r\n\r\n        return $this->render(array(\"success\" => \"Votre compte a bien été créé !\"));\r\n    }\r\n\r\n    public function getInnerRoutes(): array\r\n    {\r\n        return RegisterController::ROUTES;\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/controller/RegisterController.php b/controller/RegisterController.php
+--- a/controller/RegisterController.php	
++++ b/controller/RegisterController.php	
+@@ -101,13 +101,14 @@
+             "code_postal" => $zipCode,
+             "ville" => $city,
+             "telephone" => $phone,
+-            "hote" => $host,
+-            "voyageur" => $traveler,
+-            "admin" => false,
++            "hote" => intval($host),
++            "voyageur" => intval($traveler),
++            "admin" => intval(false),
+             "motdepasse" => password_hash( $password, PASSWORD_DEFAULT )
+         ])
+         ->get();
+ 
++
+         return $this->render(array("success" => "Votre compte a bien été créé !"));
+     }
+ 
+Index: app/Router.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\ninclude(\"./controller/Controller.php\");\r\n\r\nclass Router\r\n{\r\n    private string $url;\r\n    private string $httpMethod;\r\n\r\n\tfunction __construct()\r\n    {\r\n        $this->setUrl($_SERVER[\"REQUEST_URI\"]);\r\n        $this->setHttpMethod($_SERVER['REQUEST_METHOD']);\r\n        $this->checkRoutes();\r\n    }\r\n\r\n    /**\r\n     * Vas checker les routes mises dans le controlleur général\r\n     * @return void\r\n     */\r\n    private function checkRoutes(): void\r\n    {\r\n        /** @var bool sert à route fallback pour si une a été trouvée ou non */\r\n        $isRouteFound = false;\r\n\r\n        //Itération dans les routes du controlleur général\r\n        foreach (Controller::getRoutes() as $route => $controller) {\r\n\r\n            //Séparation de l'URL actuelle\r\n            $explodeUrl = explode(\"/\",$this->getUrl());\r\n\r\n            //Si la route n'a pas encore été trouvée et si la première portion de la route (dans controller.php) correspond à l'URL actuelle\r\n            if(in_array($route,$explodeUrl) && !$isRouteFound)\r\n            {\r\n                //Appel su controller et check des routes\r\n                $this->callController($controller);\r\n\r\n                $isRouteFound = true;\r\n            }\r\n        }\r\n\r\n        //affichage de la page 404 si pas de route trouvée\r\n        if(!$isRouteFound) $this->fallBack();\r\n    }\r\n\r\n    /**\r\n     * vas appeller le controlleur demandé, et checker les sous-routes\r\n     * @param $controller Le controlleur à appeller\r\n     */\r\n    private function callController($controller): void\r\n    {\r\n        /**  @suppressWarnings @var ControllerInstance l'instance du controlleur invoqué */\r\n        $controllerInstance = new $controller();\r\n        /** @var string[]|string Les/La sous-route(s) à checker contenues dans le controlleur invoqué  */\r\n        $subRoutes = $controllerInstance->getInnerRoutes();\r\n\r\n        /** @var string[]|string séparation de l'URL actuelle entre / et prise de la sous-route */\r\n        $explodeUrl = array_slice(explode(\"/\",$this->getUrl()),2);\r\n        /** @var string La sous-route actuelle de l'URL */\r\n        $subUrl = \"\";\r\n\r\n        //Des fois, il n'y a qu'une seule portion de sous-route, et peut créer des erreurs car ce n'est pas un tableau.\r\n        if(isset($explodeUrl[0]))\r\n        {\r\n            $subUrl = $explodeUrl[0];\r\n        } else {\r\n            $subUrl = $explodeUrl;\r\n        }\r\n\r\n        /** @var bool Sert à vois si la sous-route a été trouvée ou non */\r\n        $isSubRouteFound = false;\r\n\r\n        //Itération dans les sous-routes du controller invoqué\r\n        /** @var string $route_method La méthode du controlleur invoqué à appeller */\r\n        /** @var string $controllerMethod La méthode HTTP précisée dans le controlleur invoqué */\r\n        foreach ($subRoutes as $route_method => $controllerMethod) {\r\n\r\n            //Si la sous-route est la même que le sous-URL, que la méthode HTTP est la même précisée dans le controlleur invoqué et que la sous-route n'a pas été trouvée\r\n            if($this->checkSubRoute($route_method, $subUrl) && $this->checkHttpMethod($route_method,$this->getHttpMethod()) && !$isSubRouteFound)\r\n            {\r\n                $isSubRouteFound = true;\r\n\t\t\t\t//Appel de la méthode du controlleur demandé\r\n                $this->callControllerMethod($controllerInstance,$controllerMethod);\r\n            }\r\n        }\r\n    }\r\n\r\n    /**\r\n     * checke si la méthode HTTP indiquée dans le route d'un controlleur est bien celle quiest utilisée\r\n     * @param string $route La sous-route et sa méthode\r\n     * @param string $method La méthode HTTP à checker\r\n     */\r\n    private function checkHttpMethod(string $route, string $method): bool\r\n    {\r\n        $routeHttp = explode(\"@\",$route)[1];\r\n        return strtolower($method) === strtolower($routeHttp);\r\n    }\r\n\r\n    /**\r\n     * appelle la méthode du controlleur avec la route matchée\r\n     * @param $controller Le controlleur avec la méthode à appeller\r\n     * @param $method La méthode à utiliser\r\n\t * @return void\r\n     */\r\n    private function callControllerMethod($controller, $method): void\r\n    {\r\n        call_user_func(\r\n            array($controller,$method)\r\n        );\r\n    }\r\n\r\n    /**\r\n     * vas checker si lma sous-route du controlleurcorrespond à la sous-route de l'URL\r\n     * @var mixed $subRouteMethod\r\n     */\r\n    private function checkSubRoute(mixed $subRouteMethod, mixed $subUrl): bool\r\n    {\r\n\r\n\t\t//Unification/normalisation de la sous-URL acutelle\r\n\t\t$finalSubUrl = $subUrl;\r\n\r\n\t\t//Quand la route est (par ex) \"/register/\", la sous-URL est un tableau vide. Je le convertis donc en string vide, car se sont les mêmes routes (à un '/' près)\r\n\t\tif(gettype($subUrl) === 'array' && count($subUrl) === 0)\r\n\t\t{\r\n\t\t\t$finalSubUrl = \"\";\r\n\t\t}\r\n\r\n\t\t//Unification/normalisation de la sous-route du controlleur\r\n\t\t//Séparation de la sous-route et de sa méthode\r\n\t\t$separatedRoute = explode(\"@\",$subRouteMethod);\r\n\t\t//Si la sous-route est isset, alors je la donne à la varible pour la comparer à la route de l'URL. Sinon, je donne ce que l'explode m'a donné, au cas-ou.\r\n\t\t$finalSubRoute = $separatedRoute[0] ?? $separatedRoute;\r\n\r\n\t\t//Retour si la sous-route de l'URL et la sous-route du controlleur match.\r\n        return $finalSubUrl === $finalSubRoute;\r\n    }\r\n\r\n    public static function fallBack(): void\r\n    {\r\n        include './view/404.php';\r\n    }\r\n\r\n    public function setUrl(string $url): void\r\n    {\r\n        $this->url = $url;\r\n    }\r\n\r\n    public function getUrl(): string\r\n    {\r\n        return $this->url;\r\n    }\r\n\r\n    public function getHttpMethod(): string\r\n    {\r\n        return $this->httpMethod;\r\n    }\r\n\r\n    public function setHttpMethod(string $method): void\r\n    {\r\n        $this->httpMethod = $method;\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/Router.php b/app/Router.php
+--- a/app/Router.php	
++++ b/app/Router.php	
+@@ -26,6 +26,11 @@
+         //Itération dans les routes du controlleur général
+         foreach (Controller::getRoutes() as $route => $controller) {
+ 
++			if(str_contains($this->getUrl(),"?"))
++			{
++				$this->setUrl(explode("?",$this->getUrl())[0]);
++			}
++
+             //Séparation de l'URL actuelle
+             $explodeUrl = explode("/",$this->getUrl());
+ 
+Index: app/db/Connect.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\ninclude \"app/exceptions/DBexception.php\";\r\n\r\n//Singleton\r\n\r\n/**\r\n * Singleton de connection à la BDD.\r\n * DAL\r\n */\r\nclass Connect\r\n{\r\n    private static Connect $instance;\r\n\r\n\r\n    private PDO $connect;\r\n\r\n\r\n    function __construct()\r\n    {\r\n\r\n    }\r\n\r\n    public static function getInstance(): Connect\r\n    {\r\n        if(!isset(self::$instance))\r\n        {\r\n            self::$instance = new Connect();\r\n        }\r\n\r\n        return self::$instance;\r\n    }\r\n\r\n\tpublic function connect(): bool\r\n\t{\r\n\t\t$PDOStatus = true;\r\n\r\n\t\ttry {\r\n\t\t\t$this->setConnect(\r\n\t\t\t\tnew PDO(\r\n\t\t\t\t\t\"mysql:host=\".$_ENV[\"DB_HOST\"].\":\".$_ENV[\"DB_PORT\"].\";dbname=\".$_ENV[\"DB_NAME\"],\r\n\t\t\t\t\t$_ENV[\"DB_USER\"],\r\n\t\t\t\t\t$_ENV[\"DB_PWD\"],\r\n\t\t\t\t)\r\n\t\t\t);\r\n\t\t} catch (Exception $e) {\r\n\t\t\t$PDOStatus = false;\r\n\t\t} finally {\r\n\t\t\treturn $PDOStatus;\r\n\t\t}\r\n\t}\r\n\r\n\t/**\r\n\t * @throws Exception\r\n\t */\r\n\tpublic function execute(string $sql, array $params): array|bool\r\n\t{\r\n\t\t//Prise de la connexion en singleton\r\n\t\t//Vas se connecter automatiquement à la BDD\r\n\t\t$conn =\r\n\t\t\tself::getInstance()\r\n\t\t\t\t->getConnect();\r\n\r\n\t\t// @deprecated Servait pour createGetRecord et createGetRecord, mais ne sert plus à rien\r\n\t\t//$conn->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);\r\n\r\n\t\t//Préparation de la query\r\n\t\t$prepared = $conn->prepare($sql);\r\n\r\n\r\n\t\t//Si le tableau des paramètres est vide, donner null pour ce qui va exécuter. Sinon, donner le tableau\r\n\t\t$execParams = (empty($params) ? null : $params);\r\n\t\t//Exécution de la query avec les paramètres\r\n\t\t$prepared->execute($execParams);\r\n\r\n\t\t//Prise des résultats\r\n\t\t$resAll = $prepared->fetchAll(PDO::FETCH_ASSOC);\r\n\r\n\r\n\t\t$res = $resAll;\r\n\r\n\t\t//Retour du résultat\r\n\t\treturn $res;\r\n\t}\r\n\r\n\tpublic function disconnect(): void\r\n\t{\r\n\t\t$this->setConnect(null);\r\n\t}\r\n\r\n    public function getConnect(): PDO\r\n    {\r\n        return $this->connect;\r\n    }\r\n\r\n    public function setConnect(PDO|null $connect): Connect\r\n    {\r\n\t\tif(!isset($connect))\r\n\t\t{\r\n\t\t\tunset($this->connect);\r\n\t\t} else {\r\n\t\t\t$this->connect = $connect;\r\n\t\t}\r\n\r\n        return $this;\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/db/Connect.php b/app/db/Connect.php
+--- a/app/db/Connect.php	
++++ b/app/db/Connect.php	
+@@ -76,7 +76,6 @@
+ 		//Prise des résultats
+ 		$resAll = $prepared->fetchAll(PDO::FETCH_ASSOC);
+ 
+-
+ 		$res = $resAll;
+ 
+ 		//Retour du résultat
+Index: app/interfaces/ORMInterface.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\ninterface ORMInterface\r\n{\r\n    // --------- Builders (query builders) ---------\r\n    /**\r\n     * Crée une instruction 'where' dans l'instruction SQL\r\n     * @param string $colonne La colonne du modèle.\r\n     * @param string $operator L'opérateur à utiliser. '=' par défault.\r\n     * @param mixed $value La valeur à chercher.\r\n     */\r\n    public function where(string $colonne, mixed $value, string $operator = \"=\");\r\n\r\n    /**\r\n     * N'est pas compatible avec 'where'. Vas essayer de trouver une seule ligne avec sa clef primaire. Retourne un tableau vide si rien n'a été trouvé et retourne les valeurs dans la BDD si quelque chose a été trouvé.\r\n     * @param int $primaryKey La clef primaire à checker\r\n     * @return array Le tableau de la ligne à retourner. Vide si la clef primaire ne correspond à rien. \r\n     */\r\n    public function find(int $primaryKey);\r\n    /**\r\n     * Vas essayer de trouver une seule ligne avec la colonne indiquée\r\n     * @param string $colonne La colonne à checker.\r\n     * @param mixed $value La valeur de la colonne.\r\n     * @return array Le tableau de la ligne à retourner. Vide si la condition ne correspond à rien. \r\n     */\r\n    public function findBy(string $colonne, mixed $value);\r\n\r\n    /**\r\n     * Vas insérer une ligne dans la table du modèle.\r\n     * @param array $attributs Le tableau d'attributs à insérer. Format clef-valeur. La clef du tableau est la colonne.\r\n     * @return bool Si l'insertion a bien réussi ou non\r\n     */\r\n    public function create(array $attributs);\r\n\r\n    /**\r\n     * Vas mettre à jour une ligne dans la BDD.\r\n     * @param array $attributs Les attributs à mettre à jour. Format clef => valeur.\r\n     * @return bool Si la mise à jour a bien réussi ou non\r\n     */\r\n    public function update(array $attributs);\r\n\r\n    /**\r\n     * Vas supprimer une ligne en utilisant les méthodes de l'interface.\r\n     * Exemple pour supprimer une ligne avec l'ID 4 dans la table users (imaginons que la modèle User existe déjà et que la colonne ID est la clef primaire):\r\n     * ```php\r\n     * <?php\r\n     *      //Nouveau modèle User\r\n     *      $user = new User();\r\n     *      \r\n     *      $isDeleted = $user\r\n     *          //Trouver la ligne l'ID n°4\r\n     *          ->find(4)\r\n     *          //Suppression de la ligne\r\n     *          ->delete();\r\n     *      //Si la suppression ne s'est pas bien passée\r\n     *      if(!$isDeleted)\r\n     *      {\r\n     *          echo \"La suppression n'a pas pu se faire correctement\";\r\n     *      } else {\r\n     *          echo \"La suppression s'est faite correctement.\";\r\n     *      }\r\n     * ?>\r\n     * ```\r\n     * @return bool Si la supression a réussi ou non\r\n     */\r\n    public function delete();\r\n\r\n\t/**\r\n\t * Effectue une jointure SQL dans la BDD.\r\n\t * @param string $table La table de base.\r\n\t * @param string $tableCol La colonne de la table de base.\r\n\t * @param string $joinedTable Le nom de la table jointe\r\n\t * @param string $joinedCol La colonne de la table à joindre\r\n\t * @param string $joinType Le type de jointure SQL. Par défaut \"INNER JOIN\"\r\n\t */\r\n    public function join(string $table, string $tableCol, string $joinedTable, string $joinedCol, string $joinType=\"INNER JOIN\");\r\n\r\n    /**\r\n     * Créer une clause ORDER BY en SQL.\r\n     * @param string $colonne La colonne à trier par\r\n     * @param string $mode Le mode de ORDER BY à exectuter\r\n     */\r\n    public function orderBy(string $colonne, string $mode=\"ASC\");\r\n\r\n    /**\r\n     * Insère une section crue de requête SQL dans la requête.\r\n     * @param string $queryPart La partie de requête SQL crue à insérer\r\n\t * @deprecated\r\n     */\r\n    //public function raw(string $queryPart);\r\n\r\n    // --------- Executors ---------\r\n\t/**\r\n\t * Exécute la requête en enlevant la clause 'LIMIT'\r\n\t * @return array|bool|stdClass|null Retourne un tableau vide s'il n'y a aucune ligne dans la table du modèle\r\n\t */\r\n    public function all(): array|bool|stdClass|null;\r\n\r\n\t/**\r\n\t * Exécute la requête SQL construite et retourne les résultats\r\n\t * @return array|bool|stdClass|null Retourne un tableau vide s'il n'y a aucune ligne dans la table du modèle\r\n\t */\r\n    public function get(): array|bool|stdClass|null;\r\n\r\n\t/**\r\n\t * Exécute la requête SQL construite et prend automatiquement le premier résultat de la requête\r\n\t * @return array|bool|stdClass|null\r\n\t */\r\n    public function first(): array|bool|stdClass|null;\r\n\r\n\t/**\r\n\t * Exécute la requête SQL construite et prend automatiquement le dernier résultat de la requête\r\n\t * @return array|bool|stdClass|null\r\n\t */\r\n    public function last(): array|bool|stdClass|null;\r\n\r\n\t/**\r\n\t * Exécute la requête SQL construite et prend automatiquement le premier résultat par rapport\r\n\t * à la colonne ou la clef primaire (si indiquée) ou la date de création (created_at) (le moins vieux)\r\n\t * @param string $column La colonne sur laquelle va être basé l'opération latest\r\n\t * @return array|bool|stdClass|null\r\n\t */\r\n    public function latest(string $column): array|bool|stdClass|null;\r\n\r\n\t/**\r\n\t * Exécute la requête SQL construite et prend automatiquement le dernier résultat par rapport\r\n\t * à la colonne ou la clef primaire (si indiquée) ou la date de création (created_at) (le plus vieux)\r\n\t * @param string $column La colonne sur laquelle va être basé l'opération oldest\r\n\t * @return array|bool|stdClass|null\r\n\t */\r\n    public function oldest(string $column): array|bool|stdClass|null;\r\n\r\n    /**\r\n     * Vide entièrement la table du modèle\r\n     * @return bool Si l'opération s'est bien passée.\r\n     */\r\n    public function truncate(): bool;\r\n\r\n    /**\r\n     * Donne les colonnes à sélectionner lors du SELECT de SQL\r\n     * @param array $colonnes Les colonnes à sélectionner lors du SELECT de sql\r\n\t * @param bool $keepOld S'il faut garder les anciennes colonnes sélectionnées. Défault à false\r\n     */\r\n    public function select(array $colonnes, bool $keepOld);\r\n\r\n\r\n    // --------- Executors (sql funcs) ---------\r\n\r\n    /**\r\n     * Exécute la requête SQL et retourne le maximum (calculé par SQL) d'une colonne donnée\r\n     */\r\n    public function max(string $colonne, string $as);\r\n\r\n    /**\r\n     * Exécute la requête SQL et retourne le minimum (calculé par SQL) d'une colonne donnée\r\n     */\r\n    public function min(string $colonne);\r\n\r\n    /**\r\n     * Exécute la requête SQL et retourne la moyenne (calculé par SQL) d'une colonne donnée\r\n     */\r\n    public function avg(string $colonne);\r\n\r\n    /**\r\n     * Exécute la requête SQL et retourne le nombre d'éléments d'une colonne donnée\r\n     */\r\n    public function count(string $colonne);\r\n\r\n    /**\r\n     * Excécute la requête SQL et effectue un GROUP BY sur une colonne.\r\n     * Il est aussi possible de faire plusieurs grouppages en y insérant un array content les colonnes à grouper\r\n     */\r\n    public function groupBy(string|array $group);\r\n\r\n    /**\r\n     * Insère une clause DISTINCT dans le SELECT\r\n     */\r\n    public function distinct();\r\n}\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/interfaces/ORMInterface.php b/app/interfaces/ORMInterface.php
+--- a/app/interfaces/ORMInterface.php	
++++ b/app/interfaces/ORMInterface.php	
+@@ -73,7 +73,7 @@
+ 	 * @param string $joinedCol La colonne de la table à joindre
+ 	 * @param string $joinType Le type de jointure SQL. Par défaut "INNER JOIN"
+ 	 */
+-    public function join(string $table, string $tableCol, string $joinedTable, string $joinedCol, string $joinType="INNER JOIN");
++    public function join(string $table, string $tableCol, string $joinedTable, string $joinedCol, string $joinType="INNER JOIN", string $tableAlias=null);
+ 
+     /**
+      * Créer une clause ORDER BY en SQL.
+Index: app/db/v1_2023-11-16_102900_db_booking.sql
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/db/v1_2023-11-16_102900_db_booking.sql b/app/db/v1_2023-11-16_102900_db_booking.sql
+new file mode 100644
+--- /dev/null	
++++ b/app/db/v1_2023-11-16_102900_db_booking.sql	
+@@ -0,0 +1,209 @@
++-- phpMyAdmin SQL Dump
++-- version 5.2.0
++-- https://www.phpmyadmin.net/
++--
++-- Hôte : 127.0.0.1:3306
++-- Généré le : lun. 13 nov. 2023 à 11:44
++-- Version du serveur : 8.0.31
++-- Version de PHP : 8.0.26
++
++SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
++START TRANSACTION;
++SET time_zone = "+00:00";
++
++
++/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
++/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
++/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
++/*!40101 SET NAMES utf8mb4 */;
++
++--
++-- Base de données : `booking`
++--
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `annonce`
++--
++
++DROP TABLE IF EXISTS `annonce`;
++CREATE TABLE IF NOT EXISTS `annonce` (
++  `idAnnonce` int NOT NULL AUTO_INCREMENT,
++  `idUtilisateur` int NOT NULL,
++  `disponibilite_debut` date NOT NULL,
++  `disponibilite_fin` date NOT NULL,
++  `emplacement` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
++  `prix` int NOT NULL,
++  `description` text COLLATE utf8mb4_general_ci NOT NULL,
++  `animaux` tinyint(1) NOT NULL,
++  `enfants` tinyint(1) NOT NULL,
++  `accessibilite` tinyint(1) NOT NULL,
++  PRIMARY KEY (`idAnnonce`),
++  KEY `idUtilisateur` (`idUtilisateur`)
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `avis`
++--
++
++DROP TABLE IF EXISTS `avis`;
++CREATE TABLE IF NOT EXISTS `avis` (
++  `idAvis` int NOT NULL AUTO_INCREMENT,
++  `idUtilisateur` int NOT NULL,
++  `idAnnonce` int NOT NULL,
++  `Note` tinyint NOT NULL,
++  `Commentaires` text COLLATE utf8mb4_general_ci NOT NULL,
++  `dateAvis` datetime NOT NULL,
++  PRIMARY KEY (`idAvis`),
++  KEY `idUtilisateur` (`idUtilisateur`)
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `equipementannonce`
++--
++
++DROP TABLE IF EXISTS `equipementannonce`;
++CREATE TABLE IF NOT EXISTS `equipementannonce` (
++  `idAnnonce` int NOT NULL,
++  `CodeEquipement` int NOT NULL,
++  KEY `idAnnonce` (`idAnnonce`,`CodeEquipement`),
++  KEY `CodeEquipement` (`CodeEquipement`)
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `liste_equipement`
++--
++
++DROP TABLE IF EXISTS `liste_equipement`;
++CREATE TABLE IF NOT EXISTS `liste_equipement` (
++  `CodeEquipement` int NOT NULL,
++  `LibelleEquipement` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
++  PRIMARY KEY (`CodeEquipement`)
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `messagerie`
++--
++
++DROP TABLE IF EXISTS `messagerie`;
++CREATE TABLE IF NOT EXISTS `messagerie` (
++  `idMessage` int NOT NULL,
++  `idUtilisateur` int NOT NULL,
++  `idReceveur` int NOT NULL,
++  `message` text COLLATE utf8mb4_general_ci NOT NULL,
++  `date` datetime NOT NULL,
++  PRIMARY KEY (`idMessage`),
++  KEY `idUtilisateur` (`idUtilisateur`)
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `regles`
++--
++
++DROP TABLE IF EXISTS `regles`;
++CREATE TABLE IF NOT EXISTS `regles` (
++  `idRegles` int NOT NULL,
++  `idAnnonce` int NOT NULL,
++  `regle` text COLLATE utf8mb4_general_ci NOT NULL,
++  PRIMARY KEY (`idRegles`),
++  KEY `idAnnonce` (`idAnnonce`)
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `reservation`
++--
++
++DROP TABLE IF EXISTS `reservation`;
++CREATE TABLE IF NOT EXISTS `reservation` (
++  `idReservation` int NOT NULL AUTO_INCREMENT,
++  `idAnnonce` int NOT NULL,
++  `idUtilisateur` int NOT NULL,
++  `dateDebut` date NOT NULL,
++  `dateFin` date NOT NULL,
++  PRIMARY KEY (`idReservation`),
++  KEY `idAnnonce` (`idAnnonce`,`idUtilisateur`),
++  KEY `idUtilisateur` (`idUtilisateur`)
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `utilisateur`
++--
++
++DROP TABLE IF EXISTS `utilisateur`;
++CREATE TABLE IF NOT EXISTS `utilisateur` (
++  `idUtilisateur` int NOT NULL AUTO_INCREMENT,
++  `nom` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
++  `prenom` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
++  `adresse` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
++  `age` int NOT NULL,
++  `code_postal` int NOT NULL,
++  `ville` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
++  `telephone` int NOT NULL,
++  `hote` tinyint(1) NOT NULL,
++  `voyageur` tinyint(1) NOT NULL,
++  `admin` tinyint(1) NOT NULL,
++  `motdepasse` text COLLATE utf8mb4_general_ci NOT NULL,
++  PRIMARY KEY (`idUtilisateur`)
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++--
++-- Contraintes pour les tables déchargées
++--
++
++--
++-- Contraintes pour la table `annonce`
++--
++ALTER TABLE `annonce`
++  ADD CONSTRAINT `annonce_ibfk_1` FOREIGN KEY (`idUtilisateur`) REFERENCES `utilisateur` (`idUtilisateur`);
++
++--
++-- Contraintes pour la table `avis`
++--
++ALTER TABLE `avis`
++  ADD CONSTRAINT `avis_ibfk_1` FOREIGN KEY (`idUtilisateur`) REFERENCES `utilisateur` (`idUtilisateur`);
++
++--
++-- Contraintes pour la table `equipementannonce`
++--
++ALTER TABLE `equipementannonce`
++  ADD CONSTRAINT `equipementannonce_ibfk_1` FOREIGN KEY (`idAnnonce`) REFERENCES `annonce` (`idAnnonce`),
++  ADD CONSTRAINT `equipementannonce_ibfk_2` FOREIGN KEY (`CodeEquipement`) REFERENCES `liste_equipement` (`CodeEquipement`);
++
++--
++-- Contraintes pour la table `messagerie`
++--
++ALTER TABLE `messagerie`
++  ADD CONSTRAINT `messagerie_ibfk_1` FOREIGN KEY (`idUtilisateur`) REFERENCES `utilisateur` (`idUtilisateur`);
++
++--
++-- Contraintes pour la table `regles`
++--
++ALTER TABLE `regles`
++  ADD CONSTRAINT `regles_ibfk_1` FOREIGN KEY (`idAnnonce`) REFERENCES `annonce` (`idAnnonce`);
++
++--
++-- Contraintes pour la table `reservation`
++--
++ALTER TABLE `reservation`
++  ADD CONSTRAINT `reservation_ibfk_1` FOREIGN KEY (`idUtilisateur`) REFERENCES `utilisateur` (`idUtilisateur`),
++  ADD CONSTRAINT `reservation_ibfk_2` FOREIGN KEY (`idAnnonce`) REFERENCES `annonce` (`idAnnonce`);
++COMMIT;
++
++/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
++/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
++/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+Index: app/db/v2_2024-01-07_154600_db_booking.sql
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/db/v2_2024-01-07_154600_db_booking.sql b/app/db/v2_2024-01-07_154600_db_booking.sql
+new file mode 100644
+--- /dev/null	
++++ b/app/db/v2_2024-01-07_154600_db_booking.sql	
+@@ -0,0 +1,274 @@
++-- phpMyAdmin SQL Dump
++-- version 5.2.1
++-- https://www.phpmyadmin.net/
++--
++-- Hôte : 127.0.0.1
++-- Généré le : dim. 07 jan. 2024 à 15:46
++-- Version du serveur : 10.4.32-MariaDB
++-- Version de PHP : 8.2.12
++
++SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
++START TRANSACTION;
++SET time_zone = "+00:00";
++
++
++/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
++/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
++/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
++/*!40101 SET NAMES utf8mb4 */;
++
++--
++-- Base de données : `db_tp_booking`
++--
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `annonce`
++--
++
++CREATE TABLE `annonce` (
++  `idAnnonce` int(11) NOT NULL,
++  `idUtilisateur` int(11) NOT NULL,
++  `disponibilite_debut` date NOT NULL,
++  `disponibilite_fin` date NOT NULL,
++  `emplacement` varchar(50) NOT NULL,
++  `prix` int(11) NOT NULL,
++  `description` text NOT NULL,
++  `animaux` tinyint(1) NOT NULL,
++  `enfants` tinyint(1) NOT NULL,
++  `accessibilite` tinyint(1) NOT NULL
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `avis`
++--
++
++CREATE TABLE `avis` (
++  `idAvis` int(11) NOT NULL,
++  `idUtilisateur` int(11) NOT NULL,
++  `idAnnonce` int(11) NOT NULL,
++  `Note` tinyint(4) NOT NULL,
++  `Commentaires` text NOT NULL,
++  `dateAvis` datetime NOT NULL
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `equipementannonce`
++--
++
++CREATE TABLE `equipementannonce` (
++  `idAnnonce` int(11) NOT NULL,
++  `CodeEquipement` int(11) NOT NULL
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `liste_equipement`
++--
++
++CREATE TABLE `liste_equipement` (
++  `CodeEquipement` int(11) NOT NULL,
++  `LibelleEquipement` varchar(30) NOT NULL
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `messagerie`
++--
++
++CREATE TABLE `messagerie` (
++  `idMessage` int(11) NOT NULL,
++  `idUtilisateur` int(11) NOT NULL,
++  `idReceveur` int(11) NOT NULL,
++  `message` text NOT NULL,
++  `date` datetime NOT NULL
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `regles`
++--
++
++CREATE TABLE `regles` (
++  `idRegles` int(11) NOT NULL,
++  `idAnnonce` int(11) NOT NULL,
++  `regle` text NOT NULL
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `reservation`
++--
++
++CREATE TABLE `reservation` (
++  `idReservation` int(11) NOT NULL,
++  `idAnnonce` int(11) NOT NULL,
++  `idUtilisateur` int(11) NOT NULL,
++  `dateDebut` date NOT NULL,
++  `dateFin` date NOT NULL
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++-- --------------------------------------------------------
++
++--
++-- Structure de la table `utilisateur`
++--
++
++CREATE TABLE `utilisateur` (
++  `idUtilisateur` int(11) NOT NULL,
++  `nom` varchar(30) NOT NULL,
++  `prenom` varchar(30) NOT NULL,
++  `adresse` varchar(50) NOT NULL,
++  `age` int(11) NOT NULL,
++  `code_postal` int(11) NOT NULL,
++  `ville` varchar(50) NOT NULL,
++  `telephone` varchar(10) NOT NULL,
++  `hote` tinyint(1) NOT NULL,
++  `voyageur` tinyint(1) NOT NULL,
++  `admin` tinyint(1) NOT NULL,
++  `motdepasse` text NOT NULL,
++  `email` varchar(100) NOT NULL
++) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
++
++--
++-- Index pour les tables déchargées
++--
++
++--
++-- Index pour la table `annonce`
++--
++ALTER TABLE `annonce`
++  ADD PRIMARY KEY (`idAnnonce`),
++  ADD KEY `idUtilisateur` (`idUtilisateur`);
++
++--
++-- Index pour la table `avis`
++--
++ALTER TABLE `avis`
++  ADD PRIMARY KEY (`idAvis`),
++  ADD KEY `idUtilisateur` (`idUtilisateur`);
++
++--
++-- Index pour la table `equipementannonce`
++--
++ALTER TABLE `equipementannonce`
++  ADD KEY `idAnnonce` (`idAnnonce`,`CodeEquipement`),
++  ADD KEY `CodeEquipement` (`CodeEquipement`);
++
++--
++-- Index pour la table `liste_equipement`
++--
++ALTER TABLE `liste_equipement`
++  ADD PRIMARY KEY (`CodeEquipement`);
++
++--
++-- Index pour la table `messagerie`
++--
++ALTER TABLE `messagerie`
++  ADD PRIMARY KEY (`idMessage`),
++  ADD KEY `idUtilisateur` (`idUtilisateur`);
++
++--
++-- Index pour la table `regles`
++--
++ALTER TABLE `regles`
++  ADD PRIMARY KEY (`idRegles`),
++  ADD KEY `idAnnonce` (`idAnnonce`);
++
++--
++-- Index pour la table `reservation`
++--
++ALTER TABLE `reservation`
++  ADD PRIMARY KEY (`idReservation`),
++  ADD KEY `idAnnonce` (`idAnnonce`,`idUtilisateur`),
++  ADD KEY `idUtilisateur` (`idUtilisateur`);
++
++--
++-- Index pour la table `utilisateur`
++--
++ALTER TABLE `utilisateur`
++  ADD PRIMARY KEY (`idUtilisateur`);
++
++--
++-- AUTO_INCREMENT pour les tables déchargées
++--
++
++--
++-- AUTO_INCREMENT pour la table `annonce`
++--
++ALTER TABLE `annonce`
++  MODIFY `idAnnonce` int(11) NOT NULL AUTO_INCREMENT;
++
++--
++-- AUTO_INCREMENT pour la table `avis`
++--
++ALTER TABLE `avis`
++  MODIFY `idAvis` int(11) NOT NULL AUTO_INCREMENT;
++
++--
++-- AUTO_INCREMENT pour la table `reservation`
++--
++ALTER TABLE `reservation`
++  MODIFY `idReservation` int(11) NOT NULL AUTO_INCREMENT;
++
++--
++-- AUTO_INCREMENT pour la table `utilisateur`
++--
++ALTER TABLE `utilisateur`
++  MODIFY `idUtilisateur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
++
++--
++-- Contraintes pour les tables déchargées
++--
++
++--
++-- Contraintes pour la table `annonce`
++--
++ALTER TABLE `annonce`
++  ADD CONSTRAINT `annonce_ibfk_1` FOREIGN KEY (`idUtilisateur`) REFERENCES `utilisateur` (`idUtilisateur`);
++
++--
++-- Contraintes pour la table `avis`
++--
++ALTER TABLE `avis`
++  ADD CONSTRAINT `avis_ibfk_1` FOREIGN KEY (`idUtilisateur`) REFERENCES `utilisateur` (`idUtilisateur`);
++
++--
++-- Contraintes pour la table `equipementannonce`
++--
++ALTER TABLE `equipementannonce`
++  ADD CONSTRAINT `equipementannonce_ibfk_1` FOREIGN KEY (`idAnnonce`) REFERENCES `annonce` (`idAnnonce`),
++  ADD CONSTRAINT `equipementannonce_ibfk_2` FOREIGN KEY (`CodeEquipement`) REFERENCES `liste_equipement` (`CodeEquipement`);
++
++--
++-- Contraintes pour la table `messagerie`
++--
++ALTER TABLE `messagerie`
++  ADD CONSTRAINT `messagerie_ibfk_1` FOREIGN KEY (`idUtilisateur`) REFERENCES `utilisateur` (`idUtilisateur`);
++
++--
++-- Contraintes pour la table `regles`
++--
++ALTER TABLE `regles`
++  ADD CONSTRAINT `regles_ibfk_1` FOREIGN KEY (`idAnnonce`) REFERENCES `annonce` (`idAnnonce`);
++
++--
++-- Contraintes pour la table `reservation`
++--
++ALTER TABLE `reservation`
++  ADD CONSTRAINT `reservation_ibfk_1` FOREIGN KEY (`idUtilisateur`) REFERENCES `utilisateur` (`idUtilisateur`),
++  ADD CONSTRAINT `reservation_ibfk_2` FOREIGN KEY (`idAnnonce`) REFERENCES `annonce` (`idAnnonce`);
++COMMIT;
++
++/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
++/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
++/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+Index: controller/MessagesController.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/controller/MessagesController.php b/controller/MessagesController.php
+new file mode 100644
+--- /dev/null	
++++ b/controller/MessagesController.php	
+@@ -0,0 +1,124 @@
++<?php
++
++include_once("./controller/Controller.php");
++
++include_once("view/navigation.php");
++include_once("view/footer.php");
++include_once("view/messages/MainMessages.php");
++include_once("view/messages/leftNavig.php");
++
++include_once ("model/MessagesModel.php");
++
++class MessagesController extends Controller
++{
++
++	public Navigation $navigation;
++	public Footer $footer;
++	public MainMessages $main;
++	public leftNavig $contacts;
++
++	private const ROUTES = array(
++		"send@POST" => "send",
++		"@GET" => "getMsg",
++	);
++
++	public function __construct()
++	{
++		if(!isset($_SESSION["userId"]))
++		{
++			header("Location: /login");
++			exit;
++		}
++
++		$this->navigation = new Navigation();
++		$this->contacts = new leftNavig();
++		$this->main = new MainMessages();
++		$this->footer = new Footer();
++	}
++
++	public function render($context = [], array|stdClass $allContacts = array(), array|stdClass $allChats = array()): void
++	{
++		echo
++			$this->navigation->render($context) .
++			$this->contacts->render($allContacts ?? array()) .
++			$this->main->render($allChats ?? array()) .
++			$this->footer->render($context)
++		;
++	}
++
++	public function send(): void
++	{
++		$data = &$_POST;
++
++		$userID = $_SESSION["userId"];
++		$msg = new MessagesModel();
++
++		$allContacts = $msg
++			->allContacts($userID);
++
++		$msg->reset();
++
++		$toSendUser = $_SESSION["toSendUser"] ?? null;
++
++		$allMsg = array();
++
++		try {
++			$errors = array();
++
++			if(isset($toSendUser))
++			{
++				$allMsg = $msg
++					->allMsg($toSendUser);
++
++				$msg->reset();
++
++				$msg->sendMsg(
++					$toSendUser,
++					$userID,
++					$data["message"],
++				);
++			}
++			else {
++				throw new Exception("toSendUser pas présent.", 3);
++			}
++
++			header( "Location: /messages?userID=$toSendUser");
++			exit;
++
++		} catch (Exception $e) {
++			dump($e);
++		} finally {
++
++		}
++	}
++
++	public function getMsg(): void
++	{
++		$userID = $_SESSION["userId"];
++
++		$msg = new MessagesModel();
++
++		$allContacts = $msg
++			->allContacts($userID);
++
++		$msg->reset();
++		$allMsg = array();
++
++		if(isset($_GET["userID"]))
++		{
++			$desti = $_GET["userID"];
++
++			$allMsg = $msg
++				->allMsg($desti);
++
++			$_SESSION["toSendUser"] = $desti;
++		}
++
++		$this->render([],$allContacts,$allMsg);
++	}
++
++	public function getInnerRoutes(): array
++	{
++		return MessagesController::ROUTES;
++	}
++}
+Index: view/navigation.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php \r\n    include(\"Template.php\");\r\n\r\n    class Navigation extends Template {\r\n        public function render($context) : string {\r\n            return '\r\n            <!doctype html>\r\n                <html>\r\n                    <head>\r\n                        <meta charset=\"UTF-8\">\r\n                        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n                        <script src=\"https://cdn.tailwindcss.com\"></script>\r\n                    </head>\r\n                    <body>\r\n                        <nav class=\"bg-white dark:bg-gray-900 w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600\">\r\n                        <div class=\"max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4\">\r\n                        <a href=\"https://flowbite.com/\" class=\"flex items-center space-x-3 rtl:space-x-reverse\">\r\n                            <img src=\"https://flowbite.com/docs/images/logo.svg\" class=\"h-8\" alt=\"Flowbite Logo\">\r\n                            <span class=\"self-center text-2xl font-semibold whitespace-nowrap dark:text-white\">Flowbite</span>\r\n                        </a>\r\n                        <div class=\"flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse\">\r\n                            <button type=\"button\" class=\"text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800\">Connexion</button>\r\n                            <button data-collapse-toggle=\"navbar-sticky\" type=\"button\" class=\"inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600\" aria-controls=\"navbar-sticky\" aria-expanded=\"false\">\r\n                            <span class=\"sr-only\">Open main menu</span>\r\n                            <svg class=\"w-5 h-5\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 17 14\">\r\n                                <path stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M1 1h15M1 7h15M1 13h15\"/>\r\n                            </svg>\r\n                        </button>\r\n                        </div>\r\n                        <div class=\"items-center justify-between hidden w-full md:flex md:w-auto md:order-1\" id=\"navbar-sticky\">\r\n                        <ul class=\"flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700\">\r\n                            <li>\r\n                            <a href=\"#\" class=\"block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500\" aria-current=\"page\">Accueil</a>\r\n                            </li>\r\n                            <li>\r\n                            <a href=\"#\" class=\"block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700\">Louer</a>\r\n                            </li>\r\n                            <li>\r\n                            <a href=\"#\" class=\"block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700\">Vendre</a>\r\n                            </li>\r\n                            <li>\r\n                            <a href=\"#\" class=\"block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700\">Inscription</a>\r\n                            </li>\r\n                        </ul>\r\n                        </div>\r\n                        </div>\r\n                        </nav>\r\n\r\n            ';\r\n        }\r\n    }
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/view/navigation.php b/view/navigation.php
+--- a/view/navigation.php	
++++ b/view/navigation.php	
+@@ -14,12 +14,12 @@
+                     <body>
+                         <nav class="bg-white dark:bg-gray-900 w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
+                         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+-                        <a href="https://flowbite.com/" class="flex items-center space-x-3 rtl:space-x-reverse">
++                        <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
+                             <img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="Flowbite Logo">
+-                            <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Flowbite</span>
++                            <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Bookeur</span>
+                         </a>
+                         <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+-                            <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Connexion</button>
++                            <button onclick="location.href = \'/login\' " type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Connexion</button>
+                             <button data-collapse-toggle="navbar-sticky" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-sticky" aria-expanded="false">
+                             <span class="sr-only">Open main menu</span>
+                             <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+@@ -30,16 +30,16 @@
+                         <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
+                         <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+                             <li>
+-                            <a href="#" class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Accueil</a>
++                            <a href="/" class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Accueil</a>
+                             </li>
+                             <li>
+-                            <a href="#" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Louer</a>
++                            <a href="/louer" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Louer</a>
+                             </li>
+                             <li>
+-                            <a href="#" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Vendre</a>
++                            <a href="/vendre" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Vendre</a>
+                             </li>
+                             <li>
+-                            <a href="#" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Inscription</a>
++                            <a href="/register" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Inscription</a>
+                             </li>
+                         </ul>
+                         </div>
+@@ -48,4 +48,4 @@
+ 
+             ';
+         }
+-    }
+\ No newline at end of file
++    }
+Index: app/BaseModel.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\ninclude_once(\"./app/interfaces/ORMInterface.php\");\r\ninclude_once(\"./app/db/Connect.php\");\r\ninclude_once(\"./app/db/builders.php\");\r\n\r\ninclude(\"./app/responseParser.php\");\r\n\r\n\r\n/**\r\n * Modèle retenant toutes les méthodes de l'ORM\r\n */\r\nclass BaseModel implements ORMInterface\r\n{\r\n\tuse builders;\r\n\r\n\t/**\r\n\t * Définit l'ordre des méthodes en fonction de l'instruction SQL\r\n\t * @var array|array[]\r\n\t */\r\n\tprivate array $methodOrder = array(\r\n\t\t\"SELECT\" => array(\r\n\t\t\t\"method\",\r\n\t\t\t\"distinct\",\r\n\t\t\t\"columns\",\r\n\t\t\t\"from\",\r\n\t\t\t\"table\",\r\n\t\t),\r\n\r\n\t\t\"UPDATE\" => array(\r\n\t\t\t\"method\",\r\n\t\t\t\"table\",\r\n\t\t\t\"from\",\r\n\t\t),\r\n\r\n\t\t\"INSERT\" => array(\r\n\t\t\t\"method\",\r\n\t\t\t\"from\",\r\n\t\t\t\"table\",\r\n\t\t),\r\n\r\n\t\t\"DELETE\" => array(\r\n\t\t\t\"method\",\r\n\t\t\t\"from\",\r\n\t\t\t\"table\",\r\n\t\t),\r\n\r\n\t\t\"TRUNCATE\" => array(\r\n\t\t\t\"method\",\r\n\t\t\t\"from\",\r\n\t\t\t\"table\"\r\n\t\t)\r\n\t);\r\n\r\n\tprivate array $params = array();\r\n\r\n\t/**\r\n\t * Array qui sert d'ordre aux instructions SQL et pour construire le query SQL.\r\n\t * Se constitue ainsi :\r\n\t * - la clef = le nom de l'instruction.\r\n\t * - Valeur = autre array avec les propriétés suivantes : <br/>\r\n\t * \t\t- type : le type de données qui sera retenu : array si on peut y mettre plusieurs bouts (ex : WHERE est un array car on peut y mettre plusieurs conditions SQL) et string si on ne peut y mettre qu'une seule valeur (ex : LIMIT de SQL). <br/>\r\n\t * \t\t- sql : quoi mettre avant le contenu de l'instruction (WHERE, ORDER BY, LIMIT, etc.) <br/>\r\n\t * \t\t- builder : le nom de la fonction qui va être appellé afin de 'compiler' le contenu de la requête SQL. <br/>\r\n\t *\r\n\t * @var array\r\n\t */\r\n\tprivate array $sqlOrder = array(\r\n\t\t\"columns\" => array(\r\n\t\t\t\"type\" => \"array\",\r\n\t\t\t\"builder\" => \"buildColumns\",\r\n\t\t\t\"build\" => false,\r\n\t\t),\r\n\t\t\"insert\" => array(\r\n\t\t\t\"type\" => \"array\",\r\n\t\t\t\"builder\" => \"buildInsert\",\r\n\t\t),\r\n\t\t\"update\" => array(\r\n\t\t\t\"type\" => \"array\",\r\n\t\t\t\"builder\" => \"buildUpdates\",\r\n\t\t),\r\n\t\t\"join\" => array(\r\n\t\t\t\"type\" => \"array\",\r\n\t\t\t\"builder\" => \"buildJoints\",\r\n\t\t),\r\n\t\t\"where\" => array(\r\n\t\t\t\"type\" => \"array\",\r\n\t\t\t\"sql\" => \"WHERE\",\r\n\t\t\t\"builder\" => \"buildWhere\",\r\n\t\t),\r\n\t\t\"groupby\" => array(\r\n\t\t\t\"type\" => \"array\",\r\n\t\t\t\"sql\" => \"GROUP BY\",\r\n\t\t\t\"builder\" => \"buildGroupBy\",\r\n\t\t),\r\n\t\t\"orderby\" => array(\r\n\t\t\t\"type\" => \"array\",\r\n\t\t\t\"sql\" => \"ORDER BY\",\r\n\t\t\t\"builder\" => \"buildOrderBy\",\r\n\t\t),\r\n\t\t\"limit\" => array(\r\n\t\t\t\"type\" => \"string\",\r\n\t\t\t\"sql\" => \"LIMIT\",\r\n\t\t\t\"builder\" => \"buildLimit\",\r\n\t\t),\r\n\t\t\"distinct\" => array(\r\n\t\t\t\"type\" => \"string\",\r\n\t\t\t\"sql\" => \"DISTINCT\",\r\n\t\t\t\"builder\" => \"none\",\r\n\t\t\t\"build\" => false,\r\n\t\t),\r\n\t\t\"before\" => array(\r\n\t\t\t\"type\" => \"string\",\r\n\t\t\t\"builder\" => \"buildBefore\"\r\n\t\t),\r\n\t\t\"after\" => array(\r\n\t\t\t\"type\" => \"string\",\r\n\t\t\t\"builder\" => \"buildAfter\"\r\n\t\t),\r\n\t);\r\n\r\n\t/** @var Connect Singleton de connection à la BDD */\r\n\tprivate Connect $conn;\r\n\r\n\t/** @var string Le query qui a été construit */\r\n\tprivate string $query;\r\n\r\n\t/** @var stdClass Classe retenant les bouts de la requête. */\r\n\tprivate stdClass $queryBits;\r\n\r\n\t/** @var string Le nom de la table */\r\n\tprivate string $tableName;\r\n\r\n\t/** @var string|null La clef primaire de la table */\r\n\tprivate ?string $primaryKey;\r\n\r\n\tfunction __construct(string $tableName, string $primaryKey = null)\r\n\t{\r\n\t\t$this->setTableName($tableName);\r\n\t\t$this->setTablePrimaryKey($primaryKey);\r\n\r\n\t\t$this->registerQueryBits();\r\n\t}\r\n\r\n\t/**\r\n\t * Instancie la variable queryBits et ses bouts de base qui permettent de faire une requête simple.\r\n\t * @return void\r\n\t */\r\n\tprivate function registerQueryBits(): void\r\n\t{\r\n\t\t$this->queryBits = new stdClass();\r\n\r\n\t\t//Instructions optionnelles\r\n\t\t//Prise de toutes les parties d'instruction SQL définies\r\n\t\tforeach ($this->getSqlOrder() as $clef => $params)\r\n\t\t{\r\n\t\t\t//Prise du type de l'instruction (si c'est un array ou string).\r\n\t\t\tswitch($params[\"type\"]) {\r\n\t\t\t\tcase \"array\":\r\n\t\t\t\t\t//Initialisation de l'array\r\n\t\t\t\t\t$this->setQBit($clef,array());\r\n\t\t\t\t\tbreak;\r\n\t\t\t\tcase \"string\":\r\n\t\t\t\t\t//Initialisation du string\r\n\t\t\t\t\t$this->setQBit($clef,null);\r\n\t\t\t\t\tbreak;\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t//Query simple\r\n\t\t//Instructions de base\r\n\t\t$this->setQBit(\"method\",\"SELECT\");\r\n\t\t$this->setQBit(\"columns\",[\"*\"]);\r\n\t\t$this->setQBit(\"from\",\"FROM\");\r\n\t\t$this->setQBit(\"table\",$this->getTableName());\r\n\t}\r\n\r\n\t// ------------- Base queries (all methods in the interface) -------------\r\n\r\n\t//OK\r\n\tpublic function where(string $colonne, mixed $value, string $operator = \"=\", string|null $cond=null): BaseModel\r\n\t{\r\n\t\t$finalWhere = array(\r\n\t\t\t\"col\" => $colonne,\r\n\t\t\t\"value\" => $value,\r\n\t\t\t\"operator\" => $operator,\r\n\t\t\t\"cond\" => $cond ?? null,\r\n\t\t);\r\n\r\n\t\t$this->insertQBit(\"where\",$finalWhere);\r\n\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function orWhere(string $colonne, mixed $value, string $operator = \"=\"): BaseModel\r\n\t{\r\n\t\t$this->where($colonne, $value, $operator, \"OR\");\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function andWhere(string $colonne, mixed $value, string $operator = \"=\"): BaseModel\r\n\t{\r\n\t\t$this->where($colonne, $value, $operator, \"AND\");\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function find(int $primaryKey): BaseModel\r\n\t{\r\n\t\t$this->where($this->getTablePrimaryKey(),$primaryKey);\r\n\r\n\t\t$this->limit(1);\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function findBy(string $colonne, mixed $value): BaseModel\r\n\t{\r\n\t\t$this->where($colonne, $value);\r\n\t\t$this->limit(1);\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function create(array $attributs): BaseModel\r\n\t{\r\n\t\t$this->setQBit(\"method\",\"INSERT\");\r\n\t\t$this->setQBit(\"from\",\"INTO\");\r\n\r\n\t\t$this->setQBit(\"insert\",$attributs);\r\n\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function update(array $attributs): BaseModel\r\n\t{\r\n\r\n\t\t$this->setQBit(\"method\",\"UPDATE\");\r\n\t\t$this->setQBit(\"from\",\"SET\");\r\n\r\n\t\t$this->setQBit(\"update\",$attributs);\r\n\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function delete(): BaseModel\r\n\t{\r\n\t\t$this->setQBit(\"method\", \"DELETE\");\r\n\r\n\t\treturn $this;\r\n\t}\r\n\r\n\r\n\t//OK\r\n\tpublic function join(string $table, string $tableCol, string $joinedTable , string $joinedCol, string $joinType=\"INNER JOIN\"): BaseModel\r\n\t{\r\n\t\t$joint = $joinType . \" \";\r\n\r\n\t\t$joint .= $joinedTable;\r\n\t\t$joint .= \" ON \";\r\n\t\t$joint .= $table . \".\" . $tableCol;\r\n\t\t$joint .= \"=\" . $joinedTable . \".\" . $joinedCol;\r\n\r\n\t\t$this->insertQBit(\"join\", $joint);\r\n\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function orderBy(string $colonne, string $mode=\"ASC\"): BaseModel\r\n\t{\r\n\t\t$toInsert = array(\r\n\t\t\t\"col\" => $colonne,\r\n\t\t\t\"mode\" => $mode,\r\n\t\t);\r\n\r\n\t\t$this->insertQBit(\"orderby\",$toInsert);\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function limit(int|string $limit): BaseModel\r\n\t{\r\n\t\t$this->setQBit(\"limit\", $limit);\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t// --------- Executors ---------\r\n\r\n\t/**\r\n\t * @throws Exception\r\n\t */\r\n\t//OK\r\n\tpublic function all(): array|bool|stdClass|null\r\n\t{\r\n\t\t$this->setQBit(\"limit\",null);\r\n\t\treturn $this->exec();\r\n\t}\r\n\r\n\r\n\t/**\r\n\t * @throws Exception\r\n\t */\r\n\t//OK\r\n\tpublic function get(): array|bool|stdClass|null\r\n\t{\r\n\t\treturn $this->exec();\r\n\t}\r\n\r\n\t/**\r\n\t * @throws Exception\r\n\t */\r\n\t//OK\r\n\tpublic function first(): array|bool|stdClass|null\r\n\t{\r\n\t\t$this->limit(1);\r\n\t\treturn $this->exec();\r\n\t}\r\n\r\n\t/**\r\n\t * @throws Exception\r\n\t */\r\n\t//OK\r\n\tpublic function last(): array|bool|stdClass|null\r\n\t{\r\n\t\t$res = $this->exec();\r\n\r\n\t\tif(empty($res))\r\n\t\t{\r\n\t\t\treturn new stdClass();\r\n\t\t}\r\n\t\telse {\r\n\t\t\t$slice =  array_slice($res,-1,1);\r\n\t\t\t$dal = new responseParser($slice, $this->getQuery(), true);\r\n\r\n\t\t\treturn $dal->getResult();\r\n\t\t}\r\n\t}\r\n\r\n\r\n\t/**\r\n\t * @throws Exception\r\n\t */\r\n\t//OK\r\n\tpublic function latest(string $column = null): array|bool|stdClass|null\r\n\t{\r\n\t\t//Je ne peux pas mettre getQBit, car array_unshift prend par référence les bouts d'orderby\r\n\t\tarray_unshift($this->queryBits->orderby, array(\r\n\t\t\t\"col\" => $column ?? $this->getTablePrimaryKey() ?? \"created_at\",\r\n\t\t\t\"mode\" => \"DESC\",\r\n\t\t));\r\n\r\n\t\t$this->limit(1);\r\n\r\n\t\treturn $this->exec();\r\n\t}\r\n\r\n\t/**\r\n\t * @throws Exception\r\n\t */\r\n\t//OK\r\n\tpublic function oldest(string $column = null): array|bool|stdClass|null\r\n\t{\r\n\t\t//Je ne peux pas mettre getQBit, car array_unshift prend par référence les bouts d'orderby\r\n\t\tarray_unshift($this->queryBits->orderby, array(\r\n\t\t\t\"col\" => $column ?? $this->getTablePrimaryKey() ?? \"created_at\",\r\n\t\t\t\"mode\" => \"ASC\",\r\n\t\t));\r\n\r\n\t\t$this->limit(1);\r\n\r\n\t\treturn $this->exec();\r\n\t}\r\n\r\n\r\n\t/**\r\n\t * @throws Exception\r\n\t */\r\n\t//OK\r\n\tpublic function truncate(): bool\r\n\t{\r\n\t\t$this->setQBit(\"method\",\"TRUNCATE\");\r\n\t\t$this->setQBit(\"from\",\"TABLE\");\r\n\r\n\t\treturn $this->exec();\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function select(array $colonnes, bool $keepOld = false): BaseModel\r\n\t{\r\n\t\t$toInsert = array();\r\n\r\n\t\tforeach ($colonnes as $col)\r\n\t\t{\r\n\t\t\tif($keepOld)\r\n\t\t\t{\r\n\t\t\t\t$this->insertQBit(\"columns\",$col);\r\n\t\t\t}\r\n\r\n\t\t\t$toInsert[] = $col;\r\n\t\t}\r\n\r\n\t\tif(!$keepOld)\r\n\t\t{\r\n\t\t\t$this->setQBit(\"columns\",$toInsert);\r\n\t\t}\r\n\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t// --------- Executors (sql funcs) ---------\r\n\r\n\t/**\r\n\t * Partie commune à MAX, MIN, AVG et COUNT\r\n\t * @param string $func Le nom de la fonction SQL\r\n\t * @param string $col La colonne\r\n\t * @param string|null $as Si la colonne doit avoir un nom. Optionnel\r\n\t * @return void\r\n\t */\r\n\tprivate function funcSQL(string $func, string $col, string $as = null): void\r\n\t{\r\n\t\t$toPush = $func;\r\n\t\t$toPush .= \"(\";\r\n\t\t$toPush .= $col;\r\n\t\t$toPush .= \")\";\r\n\r\n\t\t//si un nom personnalisé est demandé\r\n\t\tif(isset($as))\r\n\t\t{\r\n\t\t\t$toPush .= \" AS \";\r\n\t\t\t$toPush .= $as;\r\n\t\t}\r\n\r\n\t\t$this->insertQBit(\"columns\",$toPush);\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function max(string $colonne, string $as = null): BaseModel\r\n\t{\r\n\t\t$this->funcSQL(\"MAX\", $colonne, ($as ?? null));\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function min(string $colonne, string $as = null): BaseModel\r\n\t{\r\n\t\t$this->funcSQL(\"MIN\", $colonne, ($as ?? null));\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function avg(string $colonne, string $as = null): BaseModel\r\n\t{\r\n\t\t$this->funcSQL(\"AVG\", $colonne, ($as ?? null));\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function count(string $colonne, string $as = null): BaseModel\r\n\t{\r\n\t\t$this->funcSQL(\"COUNT\", $colonne, ($as ?? null));\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function groupBy(string|array $group): BaseModel\r\n\t{\r\n\t\t//si plusieurs group by\r\n\t\tif(is_array($group))\r\n\t\t{\r\n\t\t\tforeach ($group as $single)\r\n\t\t\t{\r\n\t\t\t\t$this->insertQBit(\"groupby\", $single);\r\n\t\t\t}\r\n\t\t}\r\n\t\telse {\r\n\t\t\t$this->insertQBit(\"groupby\", $group);\r\n\t\t}\r\n\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t//OK\r\n\tpublic function distinct(): BaseModel\r\n\t{\r\n\t\t$this->setQBit(\"distinct\", \"DISTINCT\");\r\n\t\t//$this->queryBits->distinct = \"DISTINCT\";\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t// ------------- Combinaisons -------------\r\n\r\n\r\n\t/**\r\n\t * @deprecated La configuration de PDO fait que cette fonction ne marche pas. (Voir la classe Connect pour\r\n\t * y proposer des modifs sur la config de PDO si vous voulez)\r\n\t * @param array $attributs\r\n\t * @return $this\r\n\t */\r\n\tpublic function createGetRecord(array $attributs): BaseModel\r\n\t{\r\n\t\t$this->create($attributs);\r\n\r\n\t\t//Après la query\r\n\t\t$afterQuery = \"SELECT * FROM \";\r\n\t\t$afterQuery .= $this->getTableName();\r\n\t\t$afterQuery .= \" WHERE \";\r\n\t\t$afterQuery .= ($this->getTablePrimaryKey() ?? \"id\");\r\n\t\t$afterQuery .= \"=\";\r\n\t\t$afterQuery .= \"LAST_INSERT_ID();\";\r\n\r\n\t\t$this->insertQBit(\"after\", $afterQuery);\r\n\r\n\t\t$this->setQBit(\"columns\",null);\r\n\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t/**\r\n\t * @deprecated La configuration de PDO fait que cette fonction ne marche pas. (Voir la classe Connect pour\r\n\t * y proposer des modifs sur la config de PDO si vous voulez)\r\n\t * @param array $attributs\r\n\t * @param string $colonne\r\n\t * @return $this\r\n\t */\r\n\tpublic function createGetColumn(array $attributs, string $colonne): BaseModel\r\n\t{\r\n\t\t$this->create($attributs);\r\n\r\n\t\t$afterQuery = \"SELECT \";\r\n\t\t$afterQuery .= $colonne;\r\n\t\t$afterQuery .= \" FROM \";\r\n\t\t$afterQuery .= $this->getTableName();\r\n\t\t$afterQuery .= \" WHERE \";\r\n\t\t$afterQuery .= ($this->getTablePrimaryKey() ?? \"id\");\r\n\t\t$afterQuery .= \"=\";\r\n\t\t$afterQuery .= \"LAST_INSERT_ID();\";\r\n\t\t$this->insertQBit(\"after\", $afterQuery);\r\n\r\n\t\treturn $this;\r\n\t}\r\n\r\n\t// ------------- ORM-only funcs -------------\r\n\r\n\t/**\r\n\t * Vas exécuter le query, en construisant la requête\r\n\t * @return bool|array|stdClass|null\r\n\t * @throws Exception\r\n\t */\r\n\tprivate function exec(): bool|array|stdClass|null\r\n\t{\r\n\t\t$this->buildQuery();\r\n\r\n\t\t//Connection à la BDD en singleton\r\n\t\t$this->conn = Connect::getInstance();\r\n\r\n\t\t//Connection à la BDD\r\n\t\t$this->getConn()->connect();\r\n\r\n\t\t//Exécution de la BDD et prise des résultats\r\n\t\t$res = $this\r\n\t\t\t->getConn()\r\n\t\t\t->execute($this->getQuery(), $this->getParams());\r\n\r\n\t\t$parser = new responseParser($res, $this->getQuery(), true);\r\n\r\n\t\t//Déconnexion dans tous les cas\r\n\t\t$this->getConn()->disconnect();\r\n\r\n\t\t//Retour du résultat du parseur\r\n\t\treturn $parser->getResult();\r\n\t}\r\n\r\n\t/**\r\n\t * Construit le string qui va query la DB\r\n\t * @return void\r\n\t */\r\n\tprivate function buildQuery(): void\r\n\t{\r\n\t\t//Si une requête SQL doit être faite avant la requête demandée, l'insérer. Sinon, initialiser la query\r\n\t\t//$this->insertQ($this->queryBits->before ?? \"\");\r\n\r\n\t\t//Prise de l'ordre des bouts de query\r\n\t\t//Cette étape va prendre les bouts de query correspondants afin d'initier la requête SQL.\r\n\t\t//Puisque le tableau $methodOrder contient l'ordre des bouts en fonction de l'opération demandé\r\n\t\t//(SELECT, INSERT, UPDATE ou DELETE), je peux itérer dans ces orders pour construire le début de la requête SQL\r\n\t\t//avec les informations qu'il me faut.\r\n\t\t$orders = $this->getMethodOrder($this->getQBits(\"method\")); //$this->methodOrder[$this->getQBits(\"method\")];\r\n\r\n\t\t//Itération dans les bouts du type de requête\r\n\t\tforeach ($orders as $order)\r\n\t\t{\r\n\t\t\t//Prise du bout de requête SQL\r\n\t\t\t$preInsert = $this->getQBits($order);\r\n\t\t\t$toInsert = $preInsert;\r\n\r\n\t\t\tif(is_array($toInsert))\r\n\t\t\t{\r\n\t\t\t\t$toInsert = implode(\", \", $preInsert);\r\n\t\t\t}\r\n\r\n\t\t\tif(isset($toInsert))\r\n\t\t\t{\r\n\t\t\t\t$this->insertQ($toInsert);\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t//Itérations dans les bouts de requête SQL\r\n\t\tforeach ($this->getSqlOrder() as $bit => $types)\r\n\t\t{\r\n\t\t\t//Si la partie de SQL n'est pas vide\r\n\t\t\tif(!empty($this->getQBits($bit)))\r\n\t\t\t{\r\n\t\t\t\t//Si un builder y est indiqué et qu'il est différent de none\r\n\t\t\t\tif(isset($types[\"builder\"]) && $types[\"builder\"] !== 'none')\r\n\t\t\t\t{\r\n\t\t\t\t\t/* NOTE :\r\n\t\t\t\t\tPour une raison inconnue, PHP décide de transformer l'array des paramètres à construire de ce format\r\n\t\t\t\t\tarray(1) { [0]=> array(2) { [\"cond\"]=> NULL [\"clause\"]=> string(4) \"id=1\" } } (normal, ce que je veux)\r\n\t\t\t\t\tà ça (quand un seul autre array est donné dans l'array):\r\n\t\t\t\t\tarray(1) { [0]=> array(2) { [\"cond\"]=> NULL [\"clause\"]=> string(4) \"id=1\" } }\r\n\t\t\t\t\tVoici donc pourquoi il ne faut pas utiliser call_user_fund_array ici. (Merci PHP :) )\r\n\t\t\t\t\t$builtPart = call_user_func_array(array($this,$types[\"builder\"]),$this->queryBits->{$bit});\r\n\t\t\t\t\t*/\r\n\r\n\t\t\t\t\t//S'il est indiqué (ou non) de build, alors build la partie de query\r\n\t\t\t\t\tif(\r\n\t\t\t\t\t\t!isset($types[\"build\"]) ||\r\n\t\t\t\t\t\t(isset($types[\"build\"]) && $types[\"build\"] === true))\r\n\t\t\t\t\t{\r\n\r\n\t\t\t\t\t\t//Alors on passe cette partie d'instruction aux builders\r\n\t\t\t\t\t\t//TODO: getBuilder()\r\n\t\t\t\t\t\t$build = $this->{$types[\"builder\"]}($this->getQBits($bit)); //$this->queryBits->{$bit});\r\n\r\n\t\t\t\t\t\tif(gettype($build) === 'string')\r\n\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\tif(!isset($bitsParams[\"build\"]) || $bitsParams[\"build\"] === true)\r\n\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\t//Insertion de la partie SQL finale\r\n\t\t\t\t\t\t\t\t$this->insertQ($build);\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t} else {\r\n\t\t\t\t\t\t\t//Prise du query SQL\r\n\t\t\t\t\t\t\t$builtSql = $build[\"sql\"] ?? \"\";\r\n\t\t\t\t\t\t\t//Prise des paramètres\r\n\t\t\t\t\t\t\t$buildParams = $build[\"params\"] ?? null;\r\n\r\n\t\t\t\t\t\t\tif(isset($buildParams))\r\n\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\t//Itérations dans les paramètres\r\n\t\t\t\t\t\t\t\tforeach ($buildParams as $param)\r\n\t\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\t\t//Ajout du paramètre\r\n\t\t\t\t\t\t\t\t\t$this->insertParam($param);\r\n\t\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\t}\r\n\r\n\t\t\t\t\t\t\t//Insertion de la partie SQL finale\r\n\t\t\t\t\t\t\t$this->insertQ($builtSql);\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\r\n\t/**\r\n\t * OK\r\n\t * Vas reset l'objet, à utiliser obligatoirement s'il faut le réutiliser.\r\n\t * @return void\r\n\t */\r\n\tpublic function reset(): void\r\n\t{\r\n\t\t$this->__construct($this->getTableName(),$this->getTablePrimaryKey());\r\n\t\t$this->query = \"\";\r\n\t\t$this->params = array();\r\n\t}\r\n\r\n\r\n\t// --------------------------------------- Assesseurs ---------------------------------------\r\n\r\n\t/**\r\n\t * Insère un bout de query SQL, pour la requête à effectuer\r\n\t * @param string|null $q Le string à insérer (peut être null : va être ignoré)\r\n\t * @return void\r\n\t */\r\n\tprivate function insertQ(string|null $q): void\r\n\t{\r\n\t\t//Si le string de query n'est pas encore défini\r\n\t\tif(!isset($this->query))\r\n\t\t{\r\n\t\t\tif(isset($q))\r\n\t\t\t{\r\n\t\t\t\t$this->query = $q;\r\n\t\t\t}\r\n\r\n\t\t}\r\n\t\t//Si le string de query est défini\r\n\t\telse {\r\n\t\t\t//On insère un espace après le dernier bout, pour séparer les instructions\r\n\t\t\tif(isset($q))\r\n\t\t\t{\r\n\t\t\t\t$this->query .= \" \".$q;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\r\n\t/**\r\n\t * Retourne la query SQL qui va être executé\r\n\t * @return string|null\r\n\t */\r\n\tpublic function getQuery(): string|null\r\n\t{\r\n\t\treturn $this->query ?? null;\r\n\t}\r\n\r\n\t/**\r\n\t * Donne les bouts de query de la clef correspondante si indiquée. Si la clef n'est pas indiquée, alors tout l'objet sera retourné\r\n\t * @param string|null $clef\r\n\t * @return stdClass|string|array|null\r\n\t */\r\n\tprivate function getQBits(string $clef = null): stdClass|string|array|null\r\n\t{\r\n\t\tif(isset($clef))\r\n\t\t{\r\n\t\t\treturn $this->queryBits->{$clef} ?? null;\r\n\t\t}\r\n\t\telse {\r\n\t\t\treturn $this->queryBits ?? null;\r\n\t\t}\r\n\t}\r\n\r\n\t/**\r\n\t * Insère dans le tableau des bits de query une valeur.\r\n\t * @param string $clef Quel endroit / bout d'instruction à insérer\r\n\t * @param mixed $value La valeur\r\n\t * @return void\r\n\t */\r\n\tprotected function insertQBit(string $clef, mixed $value): void\r\n\t{\r\n\t\t$orderMethod = $this->getSqlOrder($clef) ?? null;\r\n\r\n\t\t//Si le type de bit de query est bien un array\r\n\t\tif($orderMethod[\"type\"] === 'array')\r\n\t\t{\r\n\t\t\t//Si la clef n'existe pas\r\n\t\t\tif($this->getQBits($clef) === null)\r\n\t\t\t{\r\n\t\t\t\t$this->queryBits->{$clef} = array($value);\r\n\t\t\t}\r\n\r\n\t\t\t//Insertion de la valeur dans la query\r\n\t\t\t$this->queryBits->{$clef}[] = $value;\r\n\t\t}\r\n\t\t//Si le type est autre (sûrement un string)\r\n\t\telse {\r\n\t\t\t//Si la clef n'existe pas, alors l'initialiser\r\n\t\t\tif($this->getQBits($clef) === null)\r\n\t\t\t{\r\n\t\t\t\t$this->queryBits->{$clef} = \"\";\r\n\t\t\t}\r\n\r\n\t\t\t//Si le bout de SQL n'est pas une instruction à faire avant après la query\r\n\t\t\tif($clef === 'after')\r\n\t\t\t{\r\n\t\t\t\t$this->queryBits->{$clef} .= $value;\r\n\t\t\t}\r\n\t\t\t//Sinon, on insère une virgule après le bout d'instruction\r\n\t\t\telse {\r\n\t\t\t\t$this->queryBits->{$clef} .= \", \" . $value;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\r\n\t/**\r\n\t * Vas set pour la clef une valeur dans les bouts de query\r\n\t * @param string $clef La clef\r\n\t * @param mixed $value La valeur\r\n\t * @return void\r\n\t */\r\n\tprotected function setQBit(string $clef, mixed $value): void\r\n\t{\r\n\t\t$this->queryBits->{$clef} = $value;\r\n\t}\r\n\r\n\t/**\r\n\t * Retourne l'instance de connection à la BDD\r\n\t * @return Connect|null Instance de connection à la BDD.\r\n\t */\r\n\tpublic function getConn(): Connect|null\r\n\t{\r\n\t\treturn $this->conn ?? null;\r\n\t}\r\n\r\n\t/**\r\n\t * Retourne le nom de la table du modèle.\r\n\t * @return string\r\n\t */\r\n\tprotected function getTableName(): string\r\n\t{\r\n\t\treturn $this->tableName;\r\n\t}\r\n\r\n\t/**\r\n\t * Vas donner une valeur à la variable du nom de table du modèle\r\n\t * @param string $tableName Nom de la table\r\n\t * @return void\r\n\t */\r\n\tprotected function setTableName(string $tableName): void\r\n\t{\r\n\t\t$this->tableName = $tableName;\r\n\t}\r\n\r\n\t/**\r\n\t * Vas retourner la clef primaire si indiquée.\r\n\t * Si la clef primaire n'a pas été indiquée, alors cette méthode vas retourner null\r\n\t * @return string|null\r\n\t */\r\n\tprotected function getTablePrimaryKey(): string|null\r\n\t{\r\n\t\treturn $this->primaryKey ?? null;\r\n\t}\r\n\r\n\t/**\r\n\t * Vas donner une valeur (ou pas) à la variable de la clef primaire\r\n\t * @param string|null $key Colonne clef primaire\r\n\t * @return void\r\n\t */\r\n\tprotected function setTablePrimaryKey(string|null $key): void\r\n\t{\r\n\t\t$this->primaryKey = $key ?? null;\r\n\t}\r\n\r\n\t/**\r\n\t * Donne le tableau SQLOrder.\r\n\t * Si la clef n'est pas indiqué, alors tout le tableau sera retourné.\r\n\t * Si la clef est indiqué, alors seule la clef et son contenu sera retourné\r\n\t *\r\n\t * @param string|null $clef\r\n\t * @return array|null\r\n\t */\r\n\tpublic function getSqlOrder(string $clef = null): array|null\r\n\t{\r\n\t\tif(isset($clef))\r\n\t\t{\r\n\t\t\treturn $this->sqlOrder[$clef] ?? null;\r\n\t\t}\r\n\r\n\t\treturn $this->sqlOrder;\r\n\t}\r\n\r\n\t/**\r\n\t * Retourne le tableau des paramètres de la requête SQL\r\n\t * @return array\r\n\t */\r\n\tprotected function getParams(): array\r\n\t{\r\n\t\treturn $this->params;\r\n\t}\r\n\r\n\t/**\r\n\t * Insère une valeur dans le tableau des paramètres\r\n\t * @param mixed $param La valeur du paramètre à insérer\r\n\t * @return void\r\n\t */\r\n\tprotected function insertParam(mixed $param): void\r\n\t{\r\n\t\t$this->params[] = $param;\r\n\t}\r\n\r\n\t/**\r\n\t * Retourne la partie correspondante à la clef (si indiquée) du tableau d'ordre des opérations SQL (INSERT, DELETE, etc.).\r\n\t * Sinon, retourne le tableau complet\r\n\t * @param string|null $clef La clef\r\n\t * @return array\r\n\t */\r\n\tprotected function getMethodOrder(string $clef = null): array\r\n\t{\r\n\t\tif(isset($clef))\r\n\t\t{\r\n\t\t\treturn $this->methodOrder[$clef] ?? array();\r\n\t\t}\r\n\t\telse {\r\n\t\t\treturn $this->methodOrder;\r\n\t\t}\r\n\t}\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/BaseModel.php b/app/BaseModel.php
+--- a/app/BaseModel.php	
++++ b/app/BaseModel.php	
+@@ -256,14 +256,16 @@
+ 
+ 
+ 	//OK
+-	public function join(string $table, string $tableCol, string $joinedTable , string $joinedCol, string $joinType="INNER JOIN"): BaseModel
++	public function join(string $table, string $tableCol, string $joinedTable , string $joinedCol, string $joinType="INNER JOIN", string $tableAlias=null): BaseModel
+ 	{
+ 		$joint = $joinType . " ";
+ 
+-		$joint .= $joinedTable;
++		$joint .= $joinedTable . (isset($tableAlias) ? ' '.$tableAlias : "");
+ 		$joint .= " ON ";
+ 		$joint .= $table . "." . $tableCol;
+-		$joint .= "=" . $joinedTable . "." . $joinedCol;
++
++		$joint .= "=" . ($tableAlias ?? $joinedTable) . "." . $joinedCol;
++
+ 
+ 		$this->insertQBit("join", $joint);
+ 
+Index: view/filtres/MainFiltres.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/view/filtres/MainFiltres.php b/view/filtres/MainFiltres.php
+new file mode 100644
+--- /dev/null	
++++ b/view/filtres/MainFiltres.php	
+@@ -0,0 +1,13 @@
++<?php
++
++include_once ("view/Template.php");
++
++class MainFiltres extends Template
++{
++	public function render($context): string
++	{
++		$html = "zzzzz";
++
++		return $html;
++	}
++}
+Index: view/messages/MainMessages.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/view/messages/MainMessages.php b/view/messages/MainMessages.php
+new file mode 100644
+--- /dev/null	
++++ b/view/messages/MainMessages.php	
+@@ -0,0 +1,69 @@
++<?php
++
++include_once "view/Template.php";
++include_once "view/messages/DestinatireMsg.php";
++include_once "view/messages/RecepteurMsg.php";
++
++class MainMessages extends Template
++{
++    public function render($context): string {
++		$html = '
++			<div class="">
++				<div class="">
++					<!--block des chats-->
++					<div class="">';
++					if($context instanceof stdClass) {
++						$msgRender = (
++						$context->idReceveur === $_SESSION["userId"]
++							? new RecepteurMsg()
++							: new DestinatireMsg()
++						);
++
++						$html .= $msgRender->render([
++							"msg" => $context->message,
++							"date" => $context->date,
++						]);
++					} else {
++						foreach ($context as $index => $contact) {
++							$msgRender = (
++							$contact->idReceveur === $_SESSION["userId"]
++								? new RecepteurMsg()
++								: new DestinatireMsg()
++							);
++
++							$html .= $msgRender->render([
++								"msg" => $contact->message,
++								"date" => $contact->date,
++							]);
++						}
++					}
++
++					$html .= '
++					</div>
++	
++					<!--block formulaire chat-->
++					<div class="">
++						<form
++							method="post"
++							action="/messages/send">
++		
++							<input
++								name="message"
++								type="text"
++							/>
++		
++							<input
++								name="submitter"
++								type="submit"
++								value="Envoyer"
++							/>
++						</form>
++					</div>
++				</div>
++			</div>
++		<!--Main bloc-->
++		';
++
++		return $html;
++    }
++}
+Index: view/messages/DestinatireMsg.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/view/messages/DestinatireMsg.php b/view/messages/DestinatireMsg.php
+new file mode 100644
+--- /dev/null	
++++ b/view/messages/DestinatireMsg.php	
+@@ -0,0 +1,14 @@
++<?php
++
++class DestinatireMsg extends Template
++{
++
++    public function render($context): string {
++		$html = '
++		<div style="background: #b00">
++			'.$context["msg"].'
++		</div>
++		';
++		return $html;
++    }
++}
+Index: view/messages/RecepteurMsg.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/view/messages/RecepteurMsg.php b/view/messages/RecepteurMsg.php
+new file mode 100644
+--- /dev/null	
++++ b/view/messages/RecepteurMsg.php	
+@@ -0,0 +1,15 @@
++<?php
++
++class RecepteurMsg extends Template
++{
++
++    public function render($context): string {
++		$html = '
++		<div style="background: #0b0">
++			'.$context["msg"].'
++		</div>
++		';
++
++		return $html;
++    }
++}
+Index: model/MessagesModel.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/model/MessagesModel.php b/model/MessagesModel.php
+new file mode 100644
+--- /dev/null	
++++ b/model/MessagesModel.php	
+@@ -0,0 +1,49 @@
++<?php
++
++class MessagesModel extends Model
++{
++	protected string $tableName="messagerie";
++	protected string $primaryKey = "idMessage";
++
++	public function __construct()
++	{
++		parent::__construct($this->tableName, $this->primaryKey);
++	}
++
++	public function allContacts(int $currentUser): bool|array|stdClass|null
++	{
++		return $this
++			->where("messagerie.idUtilisateur",$currentUser)
++			->orWhere("messagerie.idReceveur",$currentUser)
++			->join("messagerie","idUtilisateur","utilisateur","idUtilisateur", "JOIN", "us")
++			->join('messagerie',"idReceveur", "utilisateur","idUtilisateur", "JOIN")
++			->groupBy("utilisateur.idUtilisateur")
++			->andWhere("utilisateur.idUtilisateur",$currentUser,"<>")
++			->all();
++	}
++
++	public function allMsg(int $targetUser): bool|array|stdClass|null
++	{
++		return $this
++			->where("messagerie.idUtilisateur",$targetUser)
++			->orWhere("messagerie.idReceveur",$targetUser)
++			->all();
++	}
++
++	/**
++	 * @throws Exception
++	 */
++	public function sendMsg(int $targetUser, int $currentUser, string $message=null): void
++	{
++		$this->
++			create([
++				"idUtilisateur" => $currentUser,
++				"idReceveur" => $targetUser,
++				"message" => $message ?? "",
++				"date" => date("Y-m-d H:i:s")
++			])
++			->get();
++		;
++	}
++
++}

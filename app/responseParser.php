@@ -48,7 +48,7 @@ class responseParser
 		}
 		else if($data === array())
 		{
-			$this->setResult(true);
+			$this->setResult(array());
 		}
 		else {
 			//Si le type des données reçues est un array
@@ -79,7 +79,7 @@ class responseParser
 						//Ce qui va être retourné
 						$toRes =
 							array_map(function ($val) {
-								return (object)json_decode(json_encode($val));
+								return $this->makeObject($val);
 							},$data);
 
 						//Retour des données
@@ -109,13 +109,6 @@ class responseParser
 			}
 		}
 	}
-
-	/**
-	 * //array map pour y transformer le tableau associatif retourné de la BDD en objet
-	 * $res = array_map(function ($val) {
-	 * return (object)json_decode(json_encode($val));
-	 * },$resAll);
-	 */
 
 	private function registerData(mixed $data, string $sql): void
 	{

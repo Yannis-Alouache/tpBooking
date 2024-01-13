@@ -256,14 +256,15 @@ class BaseModel implements ORMInterface
 
 
 	//OK
-	public function join(string $table, string $tableCol, string $joinedTable , string $joinedCol, string $joinType="INNER JOIN"): BaseModel
+	public function join(string $table, string $tableCol, string $joinedTable , string $joinedCol, string $joinType="INNER JOIN", string $alias=null): BaseModel
 	{
 		$joint = $joinType . " ";
 
-		$joint .= $joinedTable;
+		$joint .= $joinedTable .  " " . $alias ?? null;
 		$joint .= " ON ";
 		$joint .= $table . "." . $tableCol;
-		$joint .= "=" . $joinedTable . "." . $joinedCol;
+
+		$joint .= "=" . ($alias ?? $joinedTable) . "." . $joinedCol;
 
 		$this->insertQBit("join", $joint);
 

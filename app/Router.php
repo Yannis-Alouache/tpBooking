@@ -25,10 +25,12 @@ class Router
 
         //Itération dans les routes du controlleur général
         foreach (Controller::getRoutes() as $route => $controller) {
-            if(str_contains($this->getUrl(),"?"))
-            {
-              $this->setUrl(explode("?",$this->getUrl())[0]);
-            }
+
+			if(str_contains($this->getUrl(),"?"))
+			{
+				$this->setUrl(explode("?",$this->getUrl())[0]);
+			}
+
             //Séparation de l'URL actuelle
             $explodeUrl = explode("/",$this->getUrl());
 

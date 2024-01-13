@@ -24,6 +24,7 @@ class LogoutController extends Controller
         unset($_SESSION['userFullName']);
         unset($_SESSION['userEmail']);
         unset($_SESSION['userAdmin']);
+		unset($_SESSION["recipientID"]);
         
         header("Location: /login");
     }

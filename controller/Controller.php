@@ -6,6 +6,7 @@ include("./controller/LoginController.php");
 include("./controller/RegisterController.php");
 include("./controller/LogoutController.php");
 include("./controller/TestController.php");
+include("./controller/MessagesController.php");
 include("./controller/AnnouncesController.php");
 include("./controller/AnnounceController.php");
 
@@ -26,6 +27,7 @@ abstract class Controller // implements RoutesInterface
 		"register" => RegisterController::class,
 		"logout" => LogoutController::class,
 		"test" => TestController::class,
+		"messages" => MessagesController::class,
 	);
 
 	public static function getRoutes(): array

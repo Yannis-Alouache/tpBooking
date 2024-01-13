@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="019b3a77-825f-4abe-851f-c9cf50676039" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/discord.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/db/v2_2024-01-07_154600_db_booking.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/.gitkeep" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/flowbite.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/controller/MessagesController.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/model/MessagesModel.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/view/filtres/MainFiltres.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/view/messages/DestinatireMsg.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/view/messages/MainMessages.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/view/messages/RecepteurMsg.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/view/messages/leftNavig.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/tp_booking.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tp_booking.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/BaseModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/BaseModel.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Router.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Router.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/interfaces/ORMInterface.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/interfaces/ORMInterface.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/responseParser.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/responseParser.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/db/v1_2023-11-16_102900_db_booking.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/Controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/Controller.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/LogoutController.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/LogoutController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/htaccess" beforeDir="false" afterPath="$PROJECT_DIR$/htaccess" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/footer.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/footer.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/navigation.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/navigation.php" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings" synchronizationState="SYNCHRONIZE">
+    <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
+    <execution />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="C:\src\php-8.3.0\php.exe">
+    <include_path>
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-mbstring" />
+      <path value="$PROJECT_DIR$/vendor/symfony/console" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php83" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-intl-normalizer" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-intl-grapheme" />
+      <path value="$PROJECT_DIR$/vendor/symfony/var-dumper" />
+      <path value="$PROJECT_DIR$/vendor/symfony/http-foundation" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php80" />
+      <path value="$PROJECT_DIR$/vendor/voku/portable-ascii" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-ctype" />
+      <path value="$PROJECT_DIR$/vendor/symfony/translation-contracts" />
+      <path value="$PROJECT_DIR$/vendor/carbonphp/carbon-doctrine-types" />
+      <path value="$PROJECT_DIR$/vendor/symfony/mime" />
+      <path value="$PROJECT_DIR$/vendor/symfony/service-contracts" />
+      <path value="$PROJECT_DIR$/vendor/symfony/string" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php72" />
+      <path value="$PROJECT_DIR$/vendor/symfony/translation" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-intl-idn" />
+      <path value="$PROJECT_DIR$/vendor/doctrine/inflector" />
+      <path value="$PROJECT_DIR$/vendor/symfony/process" />
+      <path value="$PROJECT_DIR$/vendor/nesbot/carbon" />
+      <path value="$PROJECT_DIR$/vendor/illuminate/support" />
+      <path value="$PROJECT_DIR$/vendor/illuminate/contracts" />
+      <path value="$PROJECT_DIR$/vendor/illuminate/collections" />
+      <path value="$PROJECT_DIR$/vendor/illuminate/pipeline" />
+      <path value="$PROJECT_DIR$/vendor/illuminate/macroable" />
+      <path value="$PROJECT_DIR$/vendor/illuminate/conditionable" />
+      <path value="$PROJECT_DIR$/vendor/composer" />
+      <path value="$PROJECT_DIR$/vendor/psr/simple-cache" />
+      <path value="$PROJECT_DIR$/vendor/psr/clock" />
+      <path value="$PROJECT_DIR$/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/vendor/spatie/flare-client-php" />
+      <path value="$PROJECT_DIR$/vendor/spatie/backtrace" />
+      <path value="$PROJECT_DIR$/vendor/spatie/ignition" />
+      <path value="$PROJECT_DIR$/vendor/symfony/deprecation-contracts" />
+    </include_path>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2ap4tsKlwK8PUPHfpkqJqQ0nJ14" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "php.override.implement.member.chooser.php.doc": "NONE",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-php-predefined-ba97393d7c68-b4dcf6bb9de9-com.jetbrains.php.sharedIndexes-PS-233.13135.108" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="019b3a77-825f-4abe-851f-c9cf50676039" name="Changes" comment="" />
+      <created>1705002404673</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1705002404673</updated>
+      <workItem from="1705002408449" duration="7304000" />
+      <workItem from="1705138586193" duration="16871000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

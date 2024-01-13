@@ -73,7 +73,7 @@ interface ORMInterface
 	 * @param string $joinedCol La colonne de la table à joindre
 	 * @param string $joinType Le type de jointure SQL. Par défaut "INNER JOIN"
 	 */
-    public function join(string $table, string $tableCol, string $joinedTable, string $joinedCol, string $joinType="INNER JOIN");
+    public function join(string $table, string $tableCol, string $joinedTable, string $joinedCol, string $joinType="INNER JOIN", string $alias = null);
 
     /**
      * Créer une clause ORDER BY en SQL.
