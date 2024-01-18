@@ -8,12 +8,13 @@ class AnnouncePage extends Template {
         $html = '
             <section class="bg-gray-50 dark:bg-gray-900">
                 <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-                    <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-                        <img class="w-8 h-8 mr-2" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg" alt="logo">
-                        Flowbite    
-                    </a>
                     <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-
+                        <div class="flex justify-center flex-col items-center">
+                            <img src="../assets/images/'.$context['announce']->idAnnonce.'_'.$context['announce']->disponibilite_debut.'.png" class="h-auto max-w-lg rounded-lg"/>
+                            <div class="flex flex-row mt-3">
+                            '.$this->autorization($context).'
+                            </div>
+                        </div>
                         <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">'.$context['announce']->emplacement.'</h5>
                         <p class="font-normal text-gray-700 dark:text-gray-400">'.$context['announce']->description.'</p>
                         <div class="flex justify-end items-end pt-5">
@@ -25,5 +26,37 @@ class AnnouncePage extends Template {
         ';
     
         return $html;
+    }
+
+    public function autorization($context) {
+        $authorization = "";
+        $context['announce']->animaux ? 
+            $authorization .= '
+                <span class="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-green-400 border border-gray-500 ">
+                    Animaux
+                </span>'
+            : $authorization .= '
+                <span class="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-red-400 border border-gray-500 ">
+                    Animaux
+                </span>';
+        $context['announce']->enfants ? 
+            $authorization .= '
+                <span class="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-green-400 border border-gray-500 ">
+                    Enfants
+                </span>'
+            : $authorization .= '
+                <span class="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-red-400 border border-gray-500 ">
+                    Enfants
+                </span>';
+        $context['announce']->accessibilite ? 
+            $authorization .= '
+                <span class="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-green-400 border border-gray-500 ">
+                    Accessibilite
+                </span>'
+            : $authorization .= '
+                <span class="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-red-400 border border-gray-500 ">
+                    Accessibilite
+                </span>';
+        return $authorization;
     }
 }
