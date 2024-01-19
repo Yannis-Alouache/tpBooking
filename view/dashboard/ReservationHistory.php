@@ -3,35 +3,39 @@
 include_once("view/Template.php");
 
 class ReservationHistory extends Template {
-    public function render() : string {
-        return '
+    public function render($context) : string {
+        $html = '
         <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 lg:py-20 antialiased">
             <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
-                <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">';
+                
+                
+                $html .= '
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
                                     <th scope="col" class="px-4 py-4">ID</th>
-                                    <th scope="col" class="px-4 py-3">ID Réservant</th>
-                                    <th scope="col" class="px-4 py-3">ID Loueur</th>
-                                    <th scope="col" class="px-4 py-3">Annonce</th>
-                                    <th scope="col" class="px-4 py-3">Prix / mois</th>
+                                    <th scope="col" class="px-4 py-3">Annonce ID</th>
+                                    <th scope="col" class="px-4 py-3">Utilisateur ID</th>
+                                    <th scope="col" class="px-4 py-3">Date Début</th>
+                                    <th scope="col" class="px-4 py-3">Date Fin</th>
                                     <th scope="col" class="px-4 py-3">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody>';
 
-
+                            for ($i = 0; $i < count($context["reservationData"]); $i++) {
+                                $html .= '
                                 <!--- UNE LIGNE DU TABLEAU ---!>
                                 <tr class="border-b dark:border-gray-700">
-                                    <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">5</th>
-                                    <td class="px-4 py-3">0</td>
-                                    <td class="px-4 py-3">78</td>
-                                    <td class="px-4 py-3 max-w-[12rem] truncate">Appartement 78m² Lille</td>
-                                    <td class="px-4 py-3">499€</td>
+                                    <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">' . $context["reservationData"][$i]->idReservation .'</th>
+                                    <td class="px-4 py-3 max-w-[12rem] truncate">' . $context["reservationData"][$i]->idAnnonce .'</td>
+                                    <td class="px-4 py-3">' . $context["reservationData"][$i]->idUtilisateur .'</td>
+                                    <td class="px-4 py-3">' . $context["reservationData"][$i]->dateDebut .'</td>
+                                    <td class="px-4 py-3">' . $context["reservationData"][$i]->dateFin .'</td>
                                     <td class="px-4 py-3 flex items-center justify-end">
                                         <button id="benq-ex2710q-dropdown-button" data-dropdown-toggle="benq-ex2710q-dropdown" class="inline-flex items-center text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 p-1.5 dark:hover-bg-gray-800 text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100" type="button">
                                             <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -71,10 +75,10 @@ class ReservationHistory extends Template {
                                     </td>
                                 </tr>
                                 <!--- UNE LIGNE DU TABLEAU ---!>
+                                ';
+                            }
 
-
-
-
+                            $html .= '
                             </tbody>
                         </table>
                     </div>
@@ -236,5 +240,7 @@ class ReservationHistory extends Template {
             </div>
         </div>
         ';
+
+        return $html;
     }
 }
