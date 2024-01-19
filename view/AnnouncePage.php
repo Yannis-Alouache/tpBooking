@@ -10,7 +10,7 @@ class AnnouncePage extends Template {
                 <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
                     <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                         <div class="flex justify-center flex-col items-center">
-                            <img src="../assets/images/'.$context['announce']->idAnnonce.'_'.$context['announce']->disponibilite_debut.'.png" class="h-auto max-w-lg rounded-lg"/>
+                            <img src="../assets/images/'.$context['announce']->image.'" class="h-auto max-w-lg rounded-lg"/>
                             <div class="flex flex-row mt-3">
                             '.$this->autorization($context).'
                             </div>
