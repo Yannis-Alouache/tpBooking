@@ -5,10 +5,19 @@ include_once("view/Navigation.php");
 include_once("view/Footer.php");
 include_once("view/dashboard/UsersList.php");
 
-class UserManagerController extends Controller {
+class UserListController extends Controller {
     public Navigation $navigation;
     public Footer $footer;
     public UserList $userList;
+
+    private const ROUTES = array(
+        "@GET" => "listUsers",
+    );
+
+	public function getInnerRoutes(): array
+	{
+		return UserListController::ROUTES;
+	}
 
     public function __construct() {
         $this->navigation = new Navigation();
@@ -16,8 +25,11 @@ class UserManagerController extends Controller {
         $this->footer = new Footer();
     }
 
-    public function listBooking() {
-        return $this->render();
+    public function listUsers() {
+        $users = new UserModel();
+        $usersData = $users->get();
+
+        return $this->render(array("usersData" => $usersData));
     }
 
     public function render($context = []) {

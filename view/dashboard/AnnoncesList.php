@@ -1,45 +1,67 @@
 <?php
-
 include_once("view/Template.php");
 
-class ReservationHistory extends Template {
+class AnnoncesList extends Template {
     public function render($context) : string {
         $html = '
         <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 lg:py-20 antialiased">
             <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
-                <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">';
-                
-                
-                $html .= '
+                <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
                                     <th scope="col" class="px-4 py-4">ID</th>
-                                    <th scope="col" class="px-4 py-3">Annonce ID</th>
-                                    <th scope="col" class="px-4 py-3">Utilisateur ID</th>
-                                    <th scope="col" class="px-4 py-3">Date Début</th>
-                                    <th scope="col" class="px-4 py-3">Date Fin</th>
+                                    <th scope="col" class="px-4 py-3">idUtilisateur</th>
+                                    <th scope="col" class="px-4 py-3">Disponibilité Debut</th>
+                                    <th scope="col" class="px-4 py-3">Disponibilité Fin</th>
+                                    <th scope="col" class="px-4 py-3">Prix</th>
+                                    <th scope="col" class="px-4 py-3">
+                                        Supprimer
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>';
 
-                            for ($i = 0; $i < count($context["reservationData"]); $i++) {
-                                $html .= '
-                                <!--- UNE LIGNE DU TABLEAU ---!>
-                                <tr class="border-b dark:border-gray-700">
-                                    <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">' . $context["reservationData"][$i]->idReservation .'</th>
-                                    <td class="px-4 py-3 max-w-[12rem] truncate">' . $context["reservationData"][$i]->idAnnonce .'</td>
-                                    <td class="px-4 py-3">' . $context["reservationData"][$i]->idUtilisateur .'</td>
-                                    <td class="px-4 py-3">' . $context["reservationData"][$i]->dateDebut .'</td>
-                                    <td class="px-4 py-3">' . $context["reservationData"][$i]->dateFin .'</td>
-                                </tr>
-                                <!--- UNE LIGNE DU TABLEAU ---!>
-                                ';
-                            }
 
-                            $html .= '
-                            </tbody>
+                                if (gettype($context["annoncesData"]) == "object") {
+                                    $html .= '
+                                        <tr class="border-b dark:border-gray-700">
+                                        <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">' . $context["annoncesData"]->idAnnonce . '</th>
+                                        <td class="px-4 py-3">' . $context["annoncesData"]->idUtilisateur . '</td>
+                                        <td class="px-4 py-3">' . $context["annoncesData"]->disponibilite_debut . '</td>
+                                        <td class="px-4 py-3">' . $context["annoncesData"]->disponibilite_fin . '</td>
+                                        <td class="px-4 py-3">' . $context["annoncesData"]->prix . '</td>
+                                        <td class="px-4 py-3">
+                                            <form action="/delete-announce" method="post">
+                                                <input type="text" name="announceId" class="hidden" value=' . $context["annoncesData"]->idAnnonce . '>
+                                                <input type="submit" value="Supprimer" class="text-red-600 font-bold cursor-pointer"  />
+                                            </form>
+                                        </td>
+                                        </tr>
+                                    ';
+                                }
+                                else {
+                                    for ($i = 0; $i < count($context["annoncesData"]); $i++) { 
+                                        $html .= '
+                                        <tr class="border-b dark:border-gray-700">
+                                        <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">' . $context["annoncesData"][$i]->idAnnonce . '</th>
+                                        <td class="px-4 py-3">' . $context["annoncesData"][$i]->idUtilisateur . '</td>
+                                        <td class="px-4 py-3">' . $context["annoncesData"][$i]->disponibilite_debut . '</td>
+                                        <td class="px-4 py-3">' . $context["annoncesData"][$i]->disponibilite_fin . '</td>
+                                        <td class="px-4 py-3">' . $context["annoncesData"][$i]->prix . '</td>
+                                        <td class="px-4 py-3">
+                                            <form action="/delete-announce" method="post">
+                                                <input type="text" name="announceId" class="hidden" value=' . $context["annoncesData"][$i]->idAnnonce . '>
+                                                <input type="submit" value="Supprimer" class="text-red-600 font-bold cursor-pointer"  />
+                                            </form>
+                                        </td>
+                                        </tr>
+                                        ';
+                                    }
+                                }
+
+                            $html .=' </tbody>
                         </table>
                     </div>
                 </div>

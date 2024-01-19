@@ -10,5 +10,47 @@ class AnnouncesModel extends Model
         parent::__construct($this->tableName, $this->primaryKey);
     }
 
+    function deleteAnnounce($idAnnonce) {
+        $reservations = new ReservationModel();
+        $avis = new AvisModel();
+        $regles = new ReglesModel();
+        $equipementAnnonce = new EquipementAnnonceModel();
+
+        $avis
+            ->where("idAnnonce", $idAnnonce, "=")
+            ->delete()
+            ->get();
+
+        $avis->reset();
+
+        $regles
+            ->where("idAnnonce", $idAnnonce, "=")
+            ->delete()
+            ->get();
+
+        $regles->reset();
+
+        $equipementAnnonce
+            ->where("idAnnonce", $idAnnonce, "=")
+            ->delete()
+            ->get();
+
+        $equipementAnnonce->reset();
+
+        $reservations
+            ->where("idAnnonce", $idAnnonce, "=")
+            ->delete()
+            ->get();
+        $reservations->reset();
+        
+        $this
+            ->where("idAnnonce", $idAnnonce, "=")
+            ->delete()
+            ->get();
+
+        if (isset($_SERVER["HTTP_REFERER"])) {
+            header("Location: " . $_SERVER["HTTP_REFERER"]);
+        }
+    }
     
 }

@@ -26,12 +26,13 @@ class ReservationHistoryController extends Controller {
     }
 
     public function listBooking() {
+        if (!isset($_GET["userId"]) || !isset($_SESSION["userId"]) || !$_SESSION["userAdmin"]) {
+            header("Location: /home");
+        }
         $reservations = new ReservationModel();
 
-        $reservationsData = $reservations
-            ->where("idUtilisateur", $_GET["userId"], "=")
-            ->get();
-
+        $reservationsData = $reservations->getReservationsByUserId($_GET["userId"]);
+        
         return $this->render(array("reservationData" => $reservationsData));
     }
 
