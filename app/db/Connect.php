@@ -64,8 +64,6 @@ class Connect
 		// @deprecated Servait pour createGetRecord et createGetRecord, mais ne sert plus à rien
 		//$conn->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 
-		dump($sql, $params);
-
 		//Préparation de la query
 		$prepared = $conn->prepare($sql);
 

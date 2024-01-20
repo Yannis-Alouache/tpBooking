@@ -108,13 +108,7 @@ class AnnouncesModel extends Model
 			->join( "annonce", "idAnnonce", "equipementannonce", "idAnnonce")
 		;
 
-		$all = $this->all();
-
-		dump($all);
-
-		return $all;
-
-		//return $this->all();
+		return $this->all();
 	}
 
 	private function getDates(stdClass &$allFilters): void

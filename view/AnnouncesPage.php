@@ -73,6 +73,8 @@ class AnnouncesPage extends Template {
 
 		if($equip instanceof stdClass)
 		{
+
+
 			$html .= '
 			<div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600 break-all overflow-hidden">
 				<input
@@ -92,11 +94,22 @@ class AnnouncesPage extends Template {
 		else {
 			foreach ($equip as $index => $eq)
 			{
+				$checked = '';
+
+				if(!empty($_GET["equipList"]))
+				{
+					if(in_array($eq->CodeEquipement, $_GET["equipList"]))
+					{
+						$checked = 'checked';
+					}
+				}
+
 				$html .= '
 				<div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600 break-all overflow-hidden">
 					<input
 						id="checkbox-item-'.$index.'"
 						type="checkbox"
+						'. $checked .'
 						value="'. $eq->CodeEquipement .'"
 						name="equipList[]"
 						class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">

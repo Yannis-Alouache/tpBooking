@@ -4,30 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="019b3a77-825f-4abe-851f-c9cf50676039" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/assets/css/flowbite.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/js/filters.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/js/flowBiteCDN.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/js/flowbite.js.map" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/model/ListeEquipementModel.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/view/payment/index.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/discord.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/discord.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_11_01_2024_20_48_[Changes]1/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_11_01_2024_20_48__Changes_1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_13_01_2024_16_07_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/tp_booking.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tp_booking.iml" afterDir="false" />
+    <list default="true" id="019b3a77-825f-4abe-851f-c9cf50676039" name="Changes" comment="[+] filters V1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/db/Connect.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/db/Connect.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/responseParser.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/responseParser.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/AnnounceController.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/AnnounceController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/AnnouncesController.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/AnnouncesController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/TestController.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/TestController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model/AnnouncesModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/AnnouncesModel.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/AnnouncePage.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/AnnouncePage.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/view/AnnouncesPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/AnnouncesPage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/footer.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/footer.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/navigation.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/navigation.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,7 +126,8 @@
       <workItem from="1705347771152" duration="6338000" />
       <workItem from="1705522090977" duration="4288000" />
       <workItem from="1705741784508" duration="18132000" />
-      <workItem from="1705764850943" duration="525000" />
+      <workItem from="1705764850943" duration="644000" />
+      <workItem from="1705779289177" duration="1034000" />
     </task>
     <task id="LOCAL-00001" summary="[+] messages V1">
       <option name="closed" value="true" />
@@ -155,7 +137,15 @@
       <option name="project" value="LOCAL" />
       <updated>1705158642319</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="[+] filters V1">
+      <option name="closed" value="true" />
+      <created>1705765486001</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1705765486001</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -186,6 +176,7 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="[+] messages V1" />
-    <option name="LAST_COMMIT_MESSAGE" value="[+] messages V1" />
+    <MESSAGE value="[+] filters V1" />
+    <option name="LAST_COMMIT_MESSAGE" value="[+] filters V1" />
   </component>
 </project>
