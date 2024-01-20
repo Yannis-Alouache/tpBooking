@@ -26,6 +26,9 @@ class AnnoncesListController extends Controller {
     }
 
     public function listAnnonce() {
+        if (!isset($_SESSION["userId"]) || !$_SESSION["userAdmin"]) {
+            header("Location: /home");
+        }
         $annonces = new AnnouncesModel();
         $annoncesData = $annonces->get();
 

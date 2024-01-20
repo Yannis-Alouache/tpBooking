@@ -14,6 +14,8 @@ include("./controller/dashboard/UserListController.php");
 include("./controller/DeleteUserController.php");
 include("./controller/dashboard/AnnoncesListController.php");
 include("./controller/dashboard/DeleteAnnounceController.php");
+include("./controller/dashboard/CommentListController.php");
+include_once("./controller/dashboard/DeleteCommentController.php");
 
 //Décommenter le 'implement' crée une erreur en php 8.3 (à voir si ça crashe aussi pour vous) (class controller not found) dans les autres controlleurs.
 //Les mots ne peuvent pas décrire ma confusion.
@@ -37,7 +39,9 @@ abstract class Controller // implements RoutesInterface
 		"user-list" => UserListController::class,
 		"delete-user" => DeleteUserController::class,
 		"annonce-list" => AnnoncesListController::class,
-		"delete-announce" => DeleteAnnounceController::class
+		"delete-announce" => DeleteAnnounceController::class,
+		"comment-list" => CommentListController::class,
+		"delete-comment" => DeleteCommentController::class,
 	);
 
 	public static function getRoutes(): array
