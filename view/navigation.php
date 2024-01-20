@@ -9,8 +9,11 @@
                     <head>
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <!--Décommentez si le script en local ne marche plus-->
-                        <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+                        <!--Décommentez si le script en local ne marche plus
+                        <script src="https://cdn.tailwindcss.com"></script>
+                        -->
+                        <link rel="stylesheet" href="/assets/css/flowbite.css" />
+
                     </head>
                     <body>
                         <nav class="bg-white dark:bg-gray-900 w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">

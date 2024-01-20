@@ -7,6 +7,7 @@ include_once("view/footer.php");
 include_once("view/AnnouncesPage.php");
 
 include_once("model/AnnouncesModel.php");
+include_once("model/ListeEquipementModel.php");
 
 class AnnouncesController extends Controller
 {
@@ -15,7 +16,6 @@ class AnnouncesController extends Controller
     public AnnouncesPage $AnnouncesPage;
 
     private const ROUTES = array(
-        "@GET" => "render",
         "@GET" => "getAnnounces",
     );
 
@@ -25,13 +25,30 @@ class AnnouncesController extends Controller
         $this->AnnouncesPage = new AnnouncesPage();
     }
 
-    public function getAnnounces() {
-        $announces = new AnnouncesModel();
+	/**
+	 * @throws Exception
+	 */
+	public function getAnnounces() {
+
+		$announces = new AnnouncesModel();
+
+		$filters = $announces->getFilters();
 
         $announcesData = $announces
-            ->all();
+            ->applyFilters($filters);
 
-        return $this->render(array("announces" => $announcesData));
+		$allEquip =
+			(new ListeEquipementModel())
+				->distinct()
+				->all()
+		;
+
+        return $this->render(array(
+			"announces" => $announcesData,
+			"filters" => $filters,
+			"equip" => $allEquip,
+			"errors" => $filters->errors,
+		));
     }
 
     public function render($context = []) {

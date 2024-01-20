@@ -118,9 +118,19 @@ class responseParser
 
 	private function makeObject(array $data): stdClass
 	{
-		return
-			(object)
-			json_decode(json_encode($data));
+
+		$stded = json_encode($data);
+
+		if($stded === false)
+		{
+			throw new Exception(
+				"Erreur lors de l'encodage des données (json encode est false).
+				Des caractères non-UTF8 sont-ils présents dans les données ?
+			");
+		}
+
+		return (object) json_decode($stded);
+
 	}
 
 	// ----------------------- assessors -----------------------

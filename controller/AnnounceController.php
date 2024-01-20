@@ -15,7 +15,6 @@ class AnnounceController extends Controller
     public int $announceID;
 
     private const ROUTES = array(
-        "@GET" => "render",
         "@GET" => "getAnnounceByID",
     );
 
@@ -23,7 +22,11 @@ class AnnounceController extends Controller
         $this->navigation = new Navigation();
         $this->footer = new Footer();
         $this->AnnouncePage = new AnnouncePage();
-        if(isset($_GET['id'])) { $this->announceID = $_GET['id']; }
+        if(isset($_GET['id']) && is_numeric($_GET["id"])) { $this->announceID = $_GET['id']; }
+		else {
+			header("Location: /home");
+			exit;
+		}
     }
 
     public function getAnnounceByID() {

@@ -41,6 +41,7 @@ class Connect
 					"mysql:host=".$_ENV["DB_HOST"].":".$_ENV["DB_PORT"].";dbname=".$_ENV["DB_NAME"],
 					$_ENV["DB_USER"],
 					$_ENV["DB_PWD"],
+					array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8')
 				)
 			);
 		} catch (Exception $e) {
@@ -60,9 +61,10 @@ class Connect
 		$conn =
 			self::getInstance()
 				->getConnect();
-
 		// @deprecated Servait pour createGetRecord et createGetRecord, mais ne sert plus à rien
 		//$conn->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+
+		dump($sql, $params);
 
 		//Préparation de la query
 		$prepared = $conn->prepare($sql);
