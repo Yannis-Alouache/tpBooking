@@ -19,7 +19,7 @@ class UserModel extends Model
     public function deleteUser($userId) {
         $announces = new AnnouncesModel();
         $reservations = new ReservationModel();
-        $avis = new AvisModel();
+        $avis = new CommentModel();
         $regles = new ReglesModel();
         $messages = new MessagesModel();
         $equipementAnnonce = new EquipementAnnonceModel();

@@ -12,12 +12,17 @@ class LogoutController extends Controller
 {
 
     private const ROUTES = array(
-        "@POST" => "render",
+        "@POST" => "doLogout",
     );
+
+    public function getInnerRoutes(): array
+    {
+        return LogoutController::ROUTES;
+    }
 
     public function __construct() { }
 
-    public function render() {
+    public function doLogout() {
         if (session_status() === PHP_SESSION_NONE)
             session_start();
         unset($_SESSION['userId']);
@@ -29,8 +34,5 @@ class LogoutController extends Controller
         header("Location: /login");
     }
 
-    public function getInnerRoutes(): array
-    {
-        return LogoutController::ROUTES;
-    }
+    public function render() {}
 }
