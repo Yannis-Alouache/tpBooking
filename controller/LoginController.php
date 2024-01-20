@@ -49,6 +49,9 @@ class LoginController extends Controller
             ->where("email", $email, "=")
             ->get();
 
+        // Si l'utilisateur n'existe pas 
+        if (!isset($userData->motdepasse)) return $this->render(array("error" => "Information de connexion incorrect !"));
+
         
         if (password_verify($password, $userData->motdepasse)) {
             if (session_status() === PHP_SESSION_NONE)

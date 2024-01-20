@@ -84,6 +84,12 @@ class UserModel extends Model
             ->where("idUtilisateur", $userId, "=")
             ->delete()
             ->get();
+        $messages->reset();
+
+        $messages
+            ->where("idReceveur", $userId, "=")
+            ->delete()
+            ->get();
 
         $reservations
             ->where("idUtilisateur", $userId, "=")
