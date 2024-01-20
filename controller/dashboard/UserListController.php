@@ -26,6 +26,10 @@ class UserListController extends Controller {
     }
 
     public function listUsers() {
+        if (!isset($_SESSION["userId"]) || !$_SESSION["userAdmin"]) {
+            header("Location: /home");
+        }
+
         $users = new UserModel();
         $usersData = $users->get();
 
