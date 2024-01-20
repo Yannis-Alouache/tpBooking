@@ -47,10 +47,6 @@ class AnnouncesModel extends Model
             ->where("idAnnonce", $idAnnonce, "=")
             ->delete()
             ->get();
-
-        if (isset($_SERVER["HTTP_REFERER"])) {
-            header("Location: " . $_SERVER["HTTP_REFERER"]);
-        }
     }
     
 }

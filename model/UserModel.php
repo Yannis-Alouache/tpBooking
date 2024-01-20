@@ -1,7 +1,7 @@
 <?php
 
 include("./model/Model.php");
-include_once("./model/AvisModel.php");
+include_once("./model/CommentModel.php");
 include_once("./model/ReglesModel.php");
 include_once("./model/EquipementAnnonceModel.php");
 
