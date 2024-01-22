@@ -15,6 +15,9 @@ class UserModel extends Model
         parent::__construct($this->tableName, $this->primaryKey);
     }
 
+    public function validateEmail($email) {
+        return preg_match('/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/', $email) === 1;
+    }
 
     public function deleteUser($userId) {
         $announces = new AnnouncesModel();
