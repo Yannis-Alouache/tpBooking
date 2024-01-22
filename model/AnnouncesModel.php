@@ -12,7 +12,7 @@ class AnnouncesModel extends Model
 
     function deleteAnnounce($idAnnonce) {
         $reservations = new ReservationModel();
-        $avis = new AvisModel();
+        $avis = new CommentModel();
         $regles = new ReglesModel();
         $equipementAnnonce = new EquipementAnnonceModel();
 
@@ -198,5 +198,16 @@ class AnnouncesModel extends Model
 			}
 
 		}
+	}
+
+	public function getOwnerOfThisAnnounce(int $id) {
+		$user = new UserModel();
+
+		$owner = $user
+			->select(['nom','prenom'])
+			->find($id)
+			->get();
+
+		return $owner;
 	}
 }

@@ -16,4 +16,15 @@ class CommentModel extends Model
             ->delete()
             ->get();
 	}
+
+	public function getCommentsByAnnounce(int $id){
+
+		$allComments = $this
+			->select(['nom','prenom','Note','Commentaires','dateAvis'])
+			->join( "avis", "idUtilisateur", "utilisateur", "idUtilisateur")
+			->where("idAnnonce", $id)
+			->get();
+
+		return $allComments;
+	}
 }
