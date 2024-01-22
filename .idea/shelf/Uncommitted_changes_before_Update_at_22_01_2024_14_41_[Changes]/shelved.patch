@@ -1,0 +1,619 @@
+Index: controller/AnnounceController.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\ninclude_once(\"./controller/Controller.php\");\r\n\r\ninclude_once(\"view/navigation.php\");\r\ninclude_once(\"view/footer.php\");\r\ninclude_once(\"view/AnnouncePage.php\");\r\n\r\n\r\nclass AnnounceController extends Controller\r\n{\r\n    public Navigation $navigation;\r\n    public Footer $footer;\r\n    public AnnouncePage $AnnouncePage;\r\n    public int $announceID;\r\n\r\n    private const ROUTES = array(\r\n        \"@GET\" => \"getAnnounceByID\",\r\n    );\r\n\r\n    public function __construct() {\r\n        $this->navigation = new Navigation();\r\n        $this->footer = new Footer();\r\n        $this->AnnouncePage = new AnnouncePage();\r\n        if(isset($_GET['id']) && is_numeric($_GET[\"id\"])) { $this->announceID = $_GET['id']; }\r\n\t\telse {\r\n\t\t\theader(\"Location: /home\");\r\n\t\t\texit;\r\n\t\t}\r\n    }\r\n\r\n    public function getAnnounceByID() {\r\n        $uniqueAnnounce = new AnnouncesModel();\r\n\r\n        $announceData = $uniqueAnnounce\r\n            ->find($this->announceID)\r\n            ->get();\r\n\r\n        return $this->render(array(\"announce\" => $announceData));\r\n    }\r\n\r\n    public function render($context = []) {\r\n        echo $this->navigation->render($context) . $this->AnnouncePage->render($context) . $this->footer->render($context);\r\n    }\r\n\r\n    public function getInnerRoutes(): array\r\n    {\r\n        return AnnounceController::ROUTES;\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/controller/AnnounceController.php b/controller/AnnounceController.php
+--- a/controller/AnnounceController.php	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/controller/AnnounceController.php	(date 1705852183828)
+@@ -5,6 +5,7 @@
+ include_once("view/navigation.php");
+ include_once("view/footer.php");
+ include_once("view/AnnouncePage.php");
++include_once("view/payment/PayementScreen.php");
+ 
+ 
+ class AnnounceController extends Controller
+@@ -12,36 +13,111 @@
+     public Navigation $navigation;
+     public Footer $footer;
+     public AnnouncePage $AnnouncePage;
++	public PayementScreen $payementScreen;
++
+     public int $announceID;
+ 
+     private const ROUTES = array(
+         "@GET" => "getAnnounceByID",
++		"book@POST" => "bookAnnounce",
+     );
+ 
+     public function __construct() {
+         $this->navigation = new Navigation();
+         $this->footer = new Footer();
+         $this->AnnouncePage = new AnnouncePage();
+-        if(isset($_GET['id']) && is_numeric($_GET["id"])) { $this->announceID = $_GET['id']; }
++		$this->payementScreen = new PayementScreen();
++    }
++
++	/**
++	 * @throws Exception
++	 */
++	public function getAnnounceByID() {
++
++		//Bougé ici pour mno écran de paiement
++		if(isset($_GET['id']) && is_numeric($_GET["id"])) { $this->announceID = $_GET['id']; }
+ 		else {
+ 			header("Location: /home");
+ 			exit;
+ 		}
+-    }
+ 
+-    public function getAnnounceByID() {
+         $uniqueAnnounce = new AnnouncesModel();
+ 
++		//Pour l'écran de réservation
++		$_SESSION["currAnnonce"] = $this->announceID;
++
+         $announceData = $uniqueAnnounce
+             ->find($this->announceID)
+             ->get();
+ 
+-        return $this->render(array("announce" => $announceData));
++		$disabledDates = $this->getDisabledDates();
++
++
++        return $this->render(array("announce" => $announceData, "disabled" => $disabledDates));
+     }
+ 
+-    public function render($context = []) {
+-        echo $this->navigation->render($context) . $this->AnnouncePage->render($context) . $this->footer->render($context);
++	/**
++	 * @throws Exception
++	 */
++	private function getDisabledDates(): array
++	{
++		$announce = new AnnouncesModel();
++
++		$allDisabled = $announce
++			->select([
++				"reservation.dateDebut as start",
++				"reservation.dateFin as end",
++			])
++			->where("reservation.idAnnonce", $_GET['id'])
++			->join("annonce", "idAnnonce", "reservation", "idAnnonce")
++			->all()
++		;
++
++		if($allDisabled instanceof stdClass) { $allDisabled = [$allDisabled]; }
++
++		return $allDisabled;
++	}
++
++    public function render($context = []): void
++	{
++
++		$allDisabled = array_map(function($val) {
++			return (object)array(
++				"from" => $val->start,
++				"to" => $val->end,
++			);
++		}, $context["disabled"] ?? array());
++
++		$disabledDates = ' <script> localStorage.setItem("disabled", `'. json_encode($allDisabled) .'`); </script> ';
++
++        echo
++			$this->navigation->render($context) .
++			$disabledDates .
++			$this->AnnouncePage->render($context) .
++			$this->footer->render($context)
++		;
+     }
++
++	public function bookAnnounce(): void
++	{
++
++		$annonce = new AnnouncesModel();
++		if(!$annonce->checkBookInputs())
++		{
++			//header("Location: /announce/?id=".$_SESSION["currAnnonce"]);
++			//exit;
++		}
++
++		$this->renderBookScreen();
++	}
++
++	private function renderBookScreen(): void
++	{
++		echo
++			$this->navigation->render([]) .
++			$this->payementScreen->render() .
++			$this->footer->render([]);
++	}
+ 
+     public function getInnerRoutes(): array
+     {
+Index: model/AnnouncesModel.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\nclass AnnouncesModel extends Model\r\n{\r\n    protected string $tableName=\"annonce\";\r\n\tprotected string $primaryKey = \"idAnnonce\";\r\n\r\n    function __construct()\r\n    {\r\n        parent::__construct($this->tableName, $this->primaryKey);\r\n    }\r\n\r\n    function deleteAnnounce($idAnnonce) {\r\n        $reservations = new ReservationModel();\r\n        $avis = new AvisModel();\r\n        $regles = new ReglesModel();\r\n        $equipementAnnonce = new EquipementAnnonceModel();\r\n\r\n        $avis\r\n            ->where(\"idAnnonce\", $idAnnonce, \"=\")\r\n            ->delete()\r\n            ->get();\r\n\r\n        $avis->reset();\r\n\r\n        $regles\r\n            ->where(\"idAnnonce\", $idAnnonce, \"=\")\r\n            ->delete()\r\n            ->get();\r\n\r\n        $regles->reset();\r\n\r\n        $equipementAnnonce\r\n            ->where(\"idAnnonce\", $idAnnonce, \"=\")\r\n            ->delete()\r\n            ->get();\r\n\r\n        $equipementAnnonce->reset();\r\n\r\n        $reservations\r\n            ->where(\"idAnnonce\", $idAnnonce, \"=\")\r\n            ->delete()\r\n            ->get();\r\n        $reservations->reset();\r\n        \r\n        $this\r\n            ->where(\"idAnnonce\", $idAnnonce, \"=\")\r\n            ->delete()\r\n            ->get();\r\n    }\r\n\r\n\tpublic function getFilters(): stdClass\r\n\t{\r\n\t\t$allFilters = new stdClass();\r\n\t\t$allFilters->errors = array();\r\n\r\n\t\t$this->getDates($allFilters);\r\n\t\t$this->getCheckboxes($allFilters);\r\n\t\t$this->getInputs($allFilters);\r\n\t\t$this->getRanges($allFilters);\r\n\t\t$this->getEquip($allFilters);\r\n\r\n\t\treturn $allFilters;\r\n\t}\r\n\r\n\t/**\r\n\t * @throws Exception\r\n\t */\r\n\tpublic function applyFilters(stdClass $filters): bool|array|stdClass|null\r\n\t{\r\n\t\t$query = $this;\r\n\r\n\t\t$query\r\n\t\t\t->where(\"annonce.disponibilite_debut\", '2010-01-01', \">=\")\r\n\t\t\t->andWhere(\"annonce.disponibilite_debut\", $filters->start, \"<=\")\r\n\t\t;\r\n\r\n\t\tif($filters->start !== $filters->end && $filters->end !== '2100-01-01')\r\n\t\t{\r\n\t\t\t$query\r\n\t\t\t\t->andWhere(\"annonce.disponibilite_fin\", '2100-01-01', \"<=\")\r\n\t\t\t\t->andWhere(\"annonce.disponibilite_fin\", $filters->end, \">=\")\r\n\t\t\t;\r\n\t\t}\r\n\r\n\t\tif($filters->isEnfant === true) \t$query->andWhere(\"annonce.enfants\", 1);\r\n\t\tif($filters->isAnimaux === true) \t$query->andWhere(\"annonce.animaux\", 1);\r\n\t\tif($filters->isAccessible === true) $query->andWhere(\"annonce.accessibilite\", 1);\r\n\r\n\t\tif(!empty($filters->address))  \t\t$query->andWhere(\"annonce.emplacement\", '%' . $filters->address . '%', \"LIKE\" );\r\n\t\tif(!empty($filters->description)) \t$query->andWhere(\"annonce.description\", '%' . $filters->description . '%', \"LIKE\" );\r\n\r\n\t\tif(!empty($filters->minPrice)) \t\t$query->andWhere('annonce.prix', $filters->minPrice,\">=\");\r\n\r\n\t\tif(!empty($filters->maxPrice)) \t\t$query->andWhere('annonce.prix', $filters->maxPrice,\"<=\");\r\n\r\n\t\tif(!empty($filters->allEquip))\r\n\t\t{\r\n\t\t\tforeach ($filters->allEquip as $eq)\r\n\t\t\t{\r\n\t\t\t\t$query->orWhere(\"equipementannonce.CodeEquipement\", $eq);\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t$query\r\n\t\t\t->distinct()\r\n\t\t\t->groupBy(\"annonce.idAnnonce\")\r\n\t\t\t->join( \"annonce\", \"idAnnonce\", \"equipementannonce\", \"idAnnonce\")\r\n\t\t;\r\n\r\n\t\treturn $this->all();\r\n\t}\r\n\r\n\tprivate function getDates(stdClass &$allFilters): void\r\n\t{\r\n\t\tif(!empty($_GET[\"start\"]))\r\n\t\t{\r\n\t\t\t$dateStart = str_replace('/','-', $_GET[\"start\"]);\r\n\t\t\t$allFilters->start = DateTime::createFromFormat('m-d-Y', $dateStart)->format('Y-m-d');\r\n\t\t}\r\n\t\telse {\r\n\t\t\t$allFilters->start = date('Y-m-d');\r\n\t\t}\r\n\r\n\t\tif(!empty($_GET[\"start\"]))\r\n\t\t{\r\n\t\t\t$dateEnd = str_replace('/','-', $_GET[\"end\"]);\r\n\t\t\t$allFilters->end = DateTime::createFromFormat('m-d-Y', $dateEnd)->format('Y-m-d');\r\n\t\t}\r\n\t\telse {\r\n\t\t\t$allFilters->end = DateTime::createFromFormat('Y-m-d', '2100-01-01')->format('Y-m-d');\r\n\t\t}\r\n\t}\r\n\r\n\tprivate function getCheckboxes(stdClass &$allFilters): void\r\n\t{\r\n\t\t$checkBoxes = [\"isEnfant\", \"isAnimaux\", \"isAccessible\"];\r\n\r\n\t\tforeach ($checkBoxes as $box)\r\n\t\t{\r\n\t\t\tif(isset($_GET[$box]))\r\n\t\t\t{\r\n\t\t\t\t$allFilters->{$box} = true;\r\n\t\t\t}\r\n\t\t\telse {\r\n\t\t\t\t$allFilters->{$box} = false;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\r\n\tprivate function getInputs(stdClass &$allFilters): void\r\n\t{\r\n\t\t$allTextInputs = [\"address\", \"description\"];\r\n\r\n\t\tforeach ($allTextInputs as $input)\r\n\t\t{\r\n\t\t\t$allFilters->{$input} = (\r\n\t\t\t!empty($_GET[$input])\r\n\t\t\t\t? $_GET[$input]\r\n\t\t\t\t: null\r\n\t\t\t);\r\n\t\t}\r\n\t}\r\n\r\n\tprivate function getRanges(stdClass &$allFilters): void\r\n\t{\r\n\r\n\t\t$allRanges = [\"minPrice\", \"maxPrice\"];\r\n\r\n\t\tforeach ($allRanges as $range)\r\n\t\t{\r\n\t\t\t$allFilters->{$range} = (\r\n\t\t\t\t!empty($_GET[$range])\r\n\t\t\t\t\t? $_GET[$range]\r\n\t\t\t\t\t: 0\r\n\t\t\t);\r\n\t\t}\r\n\r\n\t\t$min = $allFilters->minPrice;\r\n\t\t$max = $allFilters->maxPrice;\r\n\r\n\t\tif($min > $max && $max > 0)\r\n\t\t{\r\n\t\t\t$allFilters->maxPrice = $min;\r\n\t\t\t$allFilters->minPrice = $max;\r\n\t\t}\r\n\t}\r\n\r\n\tprivate function getEquip(stdClass &$allFilters)\r\n\t{\r\n\t\tif(isset($_GET[\"equipList\"]))\r\n\t\t{\r\n\t\t\t$allFilters->allEquip = array();\r\n\r\n\t\t\tforeach ($_GET[\"equipList\"] as $eq)\r\n\t\t\t{\r\n\t\t\t\t$allFilters->allEquip[] = $eq;\r\n\t\t\t}\r\n\r\n\t\t}\r\n\t}\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/model/AnnouncesModel.php b/model/AnnouncesModel.php
+--- a/model/AnnouncesModel.php	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/model/AnnouncesModel.php	(date 1705930695222)
+@@ -199,4 +199,115 @@
+ 
+ 		}
+ 	}
++
++	public function checkBookInputs(): bool
++	{
++		$isValid = true;
++		try {
++			if(empty($_POST["dateRange"]))
++			{
++				$isValid = false;
++			}
++
++			//date format d/m/Y, 'to', date format 'd/m/Y'
++			$regexDates = '/^[0-9]{2}\/[0-9]{2}\/[0-9]{4}\sto\s[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/';
++
++			//Si les dates mises ne correspondent pas au regex des dates
++			if(preg_match($regexDates, $_POST["dateRange"]) !== 1)
++			{
++				$isValid = false;
++			}
++
++			if(!$this->areDatesValid())
++			{
++				$isValid = false;
++			}
++
++		} catch (Exception $e) {
++			$isValid = false;
++		} finally {
++			return $isValid;
++		}
++	}
++
++	private function areDatesValid(): bool
++	{
++		$areValid = true;
++
++		try {
++			//Prise de la date de départ
++			$exDates = explode("to", $_POST["dateRange"]);
++
++			$start = DateTime::createFromFormat("d-m-Y",
++				str_replace(
++					"/",
++					"-",
++					trim($exDates[0])
++				)
++			)->format('Y-m-d');
++
++			$end = DateTime::createFromFormat("d-m-Y",
++				str_replace(
++					"/",
++					"-",
++					trim($exDates[1])
++				)
++			)->format('Y-m-d');
++
++			$allDates = $this
++				->select([
++					"reservation.dateDebut as start",
++					"reservation.dateFin as end",
++				])
++				->where("annonce.idAnnonce", $_SESSION["currAnnonce"])
++				->join("annonce","idAnnonce","reservation","idAnnonce")
++				->all();
++
++			if($allDates instanceof stdClass) {$allDates=[$allDates];}
++
++			$this->isInDateRange($start, $end, $allDates);
++
++		} catch (Exception $e) {
++			var_dump($e);
++			$areValid = false;
++		} finally {
++			$this->reset();
++			return $areValid;
++		}
++	}
++
++	private function isInDateRange(string $iStart, string $iEnd, array $dates): bool
++	{
++		$isValid = true;
++
++		try {
++			$iStart = DateTime::createFromFormat('Y-m-d', $iStart);
++			$iEnd = DateTime::createFromFormat('Y-m-d', $iEnd);
++
++			foreach ($dates as $index => $dt) {
++				$dbStart = DateTime::createFromFormat('Y-m-d', $dt->start);
++				$dbEnd = DateTime::createFromFormat('Y-m-d', $dt->end);
++
++				//Si la date input est dans la range des dates de bdd
++				if($iStart >= $dbStart && $iStart <= $dbEnd)
++				{
++					$isValid = false;
++				}
++
++				//Si la date input de fin est dans la range des dates de bdd
++				if($iEnd >= $dbStart && $iEnd <= $dbEnd)
++				{
++					$isValid = false;
++				}
++
++				dump($iStart, $dbStart, $iEnd, $dbEnd, $isValid);
++			}
++
++		} catch (Exception $e) {
++			$isValid = false;
++		} finally {
++			return $isValid;
++		}
++
++	}
+ }
+Index: app/db/Connect.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\ninclude \"app/exceptions/DBexception.php\";\r\n\r\n//Singleton\r\n\r\n/**\r\n * Singleton de connection à la BDD.\r\n * DAL\r\n */\r\nclass Connect\r\n{\r\n    private static Connect $instance;\r\n\r\n\r\n    private PDO $connect;\r\n\r\n\r\n    function __construct()\r\n    {\r\n\r\n    }\r\n\r\n    public static function getInstance(): Connect\r\n    {\r\n        if(!isset(self::$instance))\r\n        {\r\n            self::$instance = new Connect();\r\n        }\r\n\r\n        return self::$instance;\r\n    }\r\n\r\n\tpublic function connect(): bool\r\n\t{\r\n\t\t$PDOStatus = true;\r\n\r\n\t\ttry {\r\n\t\t\t$this->setConnect(\r\n\t\t\t\tnew PDO(\r\n\t\t\t\t\t\"mysql:host=\".$_ENV[\"DB_HOST\"].\":\".$_ENV[\"DB_PORT\"].\";dbname=\".$_ENV[\"DB_NAME\"],\r\n\t\t\t\t\t$_ENV[\"DB_USER\"],\r\n\t\t\t\t\t$_ENV[\"DB_PWD\"],\r\n\t\t\t\t\tarray(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8')\r\n\t\t\t\t)\r\n\t\t\t);\r\n\t\t} catch (Exception $e) {\r\n\t\t\t$PDOStatus = false;\r\n\t\t} finally {\r\n\t\t\treturn $PDOStatus;\r\n\t\t}\r\n\t}\r\n\r\n\t/**\r\n\t * @throws Exception\r\n\t */\r\n\tpublic function execute(string $sql, array $params): array|bool\r\n\t{\r\n\t\t//Prise de la connexion en singleton\r\n\t\t//Vas se connecter automatiquement à la BDD\r\n\t\t$conn =\r\n\t\t\tself::getInstance()\r\n\t\t\t\t->getConnect();\r\n\t\t// @deprecated Servait pour createGetRecord et createGetRecord, mais ne sert plus à rien\r\n\t\t//$conn->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);\r\n\r\n\t\t//Préparation de la query\r\n\t\t$prepared = $conn->prepare($sql);\r\n\r\n\r\n\t\t//Si le tableau des paramètres est vide, donner null pour ce qui va exécuter. Sinon, donner le tableau\r\n\t\t$execParams = (empty($params) ? null : $params);\r\n\t\t//Exécution de la query avec les paramètres\r\n\t\t$prepared->execute($execParams);\r\n\r\n\t\t//Prise des résultats\r\n\t\t$resAll = $prepared->fetchAll(PDO::FETCH_ASSOC);\r\n\r\n\r\n\t\t$res = $resAll;\r\n\r\n\t\t//Retour du résultat\r\n\t\treturn $res;\r\n\t}\r\n\r\n\tpublic function disconnect(): void\r\n\t{\r\n\t\t$this->setConnect(null);\r\n\t}\r\n\r\n    public function getConnect(): PDO\r\n    {\r\n        return $this->connect;\r\n    }\r\n\r\n    public function setConnect(PDO|null $connect): Connect\r\n    {\r\n\t\tif(!isset($connect))\r\n\t\t{\r\n\t\t\tunset($this->connect);\r\n\t\t} else {\r\n\t\t\t$this->connect = $connect;\r\n\t\t}\r\n\r\n        return $this;\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/db/Connect.php b/app/db/Connect.php
+--- a/app/db/Connect.php	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/app/db/Connect.php	(date 1705929939494)
+@@ -16,9 +16,8 @@
+     private PDO $connect;
+ 
+ 
+-    function __construct()
++    private function __construct()
+     {
+-
+     }
+ 
+     public static function getInstance(): Connect
+Index: .idea/tp_booking.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<module type=\"WEB_MODULE\" version=\"4\">\r\n  <component name=\"NewModuleRootManager\">\r\n    <content url=\"file://$MODULE_DIR$\">\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/carbonphp/carbon-doctrine-types\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/composer\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/doctrine/inflector\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/illuminate/collections\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/illuminate/conditionable\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/illuminate/contracts\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/illuminate/macroable\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/illuminate/pipeline\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/illuminate/support\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/nesbot/carbon\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/psr/clock\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/psr/container\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/psr/simple-cache\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/spatie/backtrace\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/spatie/flare-client-php\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/spatie/ignition\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/console\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/deprecation-contracts\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/http-foundation\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/mime\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/polyfill-ctype\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/polyfill-intl-grapheme\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/polyfill-intl-idn\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/polyfill-intl-normalizer\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/polyfill-mbstring\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/polyfill-php72\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/polyfill-php80\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/polyfill-php83\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/process\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/service-contracts\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/string\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/translation\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/translation-contracts\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/symfony/var-dumper\" />\r\n      <excludeFolder url=\"file://$MODULE_DIR$/vendor/voku/portable-ascii\" />\r\n    </content>\r\n    <orderEntry type=\"inheritedJdk\" />\r\n    <orderEntry type=\"sourceFolder\" forTests=\"false\" />\r\n    <orderEntry type=\"library\" name=\"flowbite\" level=\"application\" />\r\n    <orderEntry type=\"library\" name=\"iconify\" level=\"application\" />\r\n    <orderEntry type=\"library\" name=\"iconify\" level=\"application\" />\r\n  </component>\r\n</module>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/tp_booking.iml b/.idea/tp_booking.iml
+--- a/.idea/tp_booking.iml	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/.idea/tp_booking.iml	(date 1705928657481)
+@@ -41,7 +41,11 @@
+     <orderEntry type="inheritedJdk" />
+     <orderEntry type="sourceFolder" forTests="false" />
+     <orderEntry type="library" name="flowbite" level="application" />
++    <orderEntry type="library" name="flatpickr" level="application" />
++    <orderEntry type="library" name="jquery-ui" level="application" />
++    <orderEntry type="library" name="jquery-3.7.1" level="application" />
++    <orderEntry type="library" name="flowbite" level="application" />
+     <orderEntry type="library" name="iconify" level="application" />
+-    <orderEntry type="library" name="iconify" level="application" />
++    <orderEntry type="library" name="flatpickr" level="application" />
+   </component>
+ </module>
+\ No newline at end of file
+Index: app/interfaces/RoutesInterfaces.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\n/**\r\n * Oblige les controllers à implémenter la fonction getInnerRoutes, sinon le routeur ne marche pas.\r\n * Créer une erreur fatale quand on donne l'implémentation à la classe Controller.\r\n */\r\ninterface RoutesInterface\r\n{\r\n    /**\r\n     * vas retourner les sous-routes du controller. Contenu de la fonction à copier-coller:\r\n     * ```php\r\n     * <?php\r\n     * public function getInnerRoutes(): array\r\n     * {\r\n     *      return controller::ROUTES\r\n     * }\r\n     * ?>\r\n     * ```\r\n     * @return array\r\n     */\r\n    public function getInnerRoutes(): array;\r\n}\r\n\r\n?>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/interfaces/RoutesInterfaces.php b/app/interfaces/RoutesInterfaces.php
+--- a/app/interfaces/RoutesInterfaces.php	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/app/interfaces/RoutesInterfaces.php	(date 1705930081480)
+@@ -9,7 +9,7 @@
+     /**
+      * vas retourner les sous-routes du controller. Contenu de la fonction à copier-coller:
+      * ```php
+-     * <?php
++     *
+      * public function getInnerRoutes(): array
+      * {
+      *      return controller::ROUTES
+Index: controller/Controller.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\n//include(\"./app/interfaces/RoutesInterfaces.php\");\r\n\r\ninclude(\"./controller/LoginController.php\");\r\ninclude(\"./controller/RegisterController.php\");\r\ninclude(\"./controller/LogoutController.php\");\r\ninclude(\"./controller/TestController.php\");\r\ninclude(\"./controller/MessagesController.php\");\r\ninclude(\"./controller/AnnouncesController.php\");\r\ninclude(\"./controller/AnnounceController.php\");\r\ninclude(\"./controller/dashboard/ReservationHistoryController.php\");\r\ninclude(\"./controller/dashboard/UserListController.php\");\r\ninclude(\"./controller/DeleteUserController.php\");\r\ninclude(\"./controller/dashboard/AnnoncesListController.php\");\r\ninclude(\"./controller/dashboard/DeleteAnnounceController.php\");\r\ninclude(\"./controller/dashboard/CommentListController.php\");\r\ninclude_once(\"./controller/dashboard/DeleteCommentController.php\");\r\n\r\n//Décommenter le 'implement' crée une erreur en php 8.3 (à voir si ça crashe aussi pour vous) (class controller not found) dans les autres controlleurs.\r\n//Les mots ne peuvent pas décrire ma confusion.\r\n//Mettez ce que vous obtenez ici quand vous décommantez svp\r\n//Félix\t\tPHP 8.3\t\tne marche pas (class Controller not found dans Login et RegisterController)\r\n//Raph\t\tPHP 8.?\t\t\r\n//Yannis\tPHP 8.?\t\t\r\nabstract class Controller // implements RoutesInterface\r\n{\r\n\tabstract public function render();\r\n\r\n\tprivate static array $routes = array(\r\n\t\t\"home\" => AnnouncesController::class,\r\n\t\t\"announce\" => AnnounceController::class,\r\n\t\t\"login\" => LoginController::class,\r\n\t\t\"register\" => RegisterController::class,\r\n\t\t\"logout\" => LogoutController::class,\r\n\t\t\"test\" => TestController::class,\r\n\t\t\"messages\" => MessagesController::class,\r\n\t\t\"reservation-history\" =>  ReservationHistoryController::class,\r\n\t\t\"user-list\" => UserListController::class,\r\n\t\t\"delete-user\" => DeleteUserController::class,\r\n\t\t\"annonce-list\" => AnnoncesListController::class,\r\n\t\t\"delete-announce\" => DeleteAnnounceController::class,\r\n\t\t\"comment-list\" => CommentListController::class,\r\n\t\t\"delete-comment\" => DeleteCommentController::class,\r\n\t);\r\n\r\n\tpublic static function getRoutes(): array\r\n\t{\r\n\t\treturn Controller::$routes;\r\n\t}\r\n\r\n\tabstract public function getInnerRoutes(): array;\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/controller/Controller.php b/controller/Controller.php
+--- a/controller/Controller.php	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/controller/Controller.php	(date 1705930298987)
+@@ -1,6 +1,6 @@
+ <?php
+ 
+-//include("./app/interfaces/RoutesInterfaces.php");
++include("./app/interfaces/RoutesInterfaces.php");
+ 
+ include("./controller/LoginController.php");
+ include("./controller/RegisterController.php");
+@@ -17,13 +17,8 @@
+ include("./controller/dashboard/CommentListController.php");
+ include_once("./controller/dashboard/DeleteCommentController.php");
+ 
+-//Décommenter le 'implement' crée une erreur en php 8.3 (à voir si ça crashe aussi pour vous) (class controller not found) dans les autres controlleurs.
+-//Les mots ne peuvent pas décrire ma confusion.
+-//Mettez ce que vous obtenez ici quand vous décommantez svp
+-//Félix		PHP 8.3		ne marche pas (class Controller not found dans Login et RegisterController)
+-//Raph		PHP 8.?		
+-//Yannis	PHP 8.?		
+-abstract class Controller // implements RoutesInterface
++
++abstract class Controller //implements RoutesInterface
+ {
+ 	abstract public function render();
+ 
+Index: view/footer.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\ninclude_once(\"Template.php\");\r\n\r\nclass Footer extends Template {\r\n    public function render($context) : string {\r\n        return '\r\n                    <footer class=\"dark:bg-gray-900\">\r\n\t\t\t\t\t\t<div class=\"w-full max-w-screen-xl mx-auto p-4 md:py-8\">\r\n\t\t\t\t\t\t\t<div class=\"sm:flex sm:items-center sm:justify-between\">\r\n\t\t\t\t\t\t\t\t<a href=\"/home\" class=\"flex items-center mb-4 sm:mb-0 space-x-3 rtl:space-x-reverse\">\r\n\t\t\t\t\t\t\t\t\t<img src=\"https://flowbite.com/docs/images/logo.svg\" class=\"h-8\" alt=\"Flowbite Logo\" />\r\n\t\t\t\t\t\t\t\t\t<span class=\"self-center text-2xl font-semibold whitespace-nowrap dark:text-white\">TpBooking</span>\r\n\t\t\t\t\t\t\t\t</a>\t\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t\t<hr class=\"my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8\" />\r\n\t\t\t\t\t\t\t<span class=\"block text-sm text-gray-500 sm:text-center dark:text-gray-400\">© 2023 <a href=\"/home\" class=\"hover:underline\">TpBooking</a>. All Rights Reserved.</span>\r\n\t\t\t\t\t\t</div>\r\n                    </footer>\r\n                    \r\n                    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js\"></script>\r\n                    \r\n                    <script src=\"/assets/js/flowbite.js\"></script>\r\n                    <script src=\"https://code.iconify.design/3/3.1.1/iconify.min.js\"></script>\r\n                </body>\r\n            </html>\r\n        ';\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/view/footer.php b/view/footer.php
+--- a/view/footer.php	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/view/footer.php	(date 1705928687879)
+@@ -17,9 +17,13 @@
+ 						</div>
+                     </footer>
+                     
+-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
++                    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
++                 
++                    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+                     
+-                    <script src="/assets/js/flowbite.js"></script>
++				 	<script type="module" src="/assets/js/flowbite.js"></script>
++				 	
++                    <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
+                     <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+                 </body>
+             </html>
+Index: .idea/jsLibraryMappings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"JavaScriptLibraryMappings\">\r\n    <file url=\"PROJECT\" libraries=\"{flowbite, iconify}\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/jsLibraryMappings.xml b/.idea/jsLibraryMappings.xml
+--- a/.idea/jsLibraryMappings.xml	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/.idea/jsLibraryMappings.xml	(date 1705928657486)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="JavaScriptLibraryMappings">
+-    <file url="PROJECT" libraries="{flowbite, iconify}" />
++    <file url="PROJECT" libraries="{flatpickr, flowbite}" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: view/navigation.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php \r\n    include(\"Template.php\");\r\n\r\n    class Navigation extends Template {\r\n        public function render($context) : string {\r\n            $html = '\r\n            <!doctype html>\r\n                <html>\r\n                    <head>\r\n                        <meta charset=\"UTF-8\">\r\n                        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n                        <!--Décommentez si le script en local ne marche plus\r\n                        <script src=\"https://cdn.tailwindcss.com\"></script>\r\n                        -->\r\n                        <link rel=\"stylesheet\" href=\"/assets/css/flowbite.css\" />\r\n\r\n                    </head>\r\n                    <body>\r\n                        <nav class=\"bg-white dark:bg-gray-900 w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600\">\r\n                        <div class=\"max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4\">\r\n                        <a href=\"/home\" class=\"flex items-center space-x-3 rtl:space-x-reverse\">\r\n                            <img src=\"https://flowbite.com/docs/images/logo.svg\" class=\"h-8\" alt=\"Flowbite Logo\">\r\n                            <span class=\"self-center text-2xl font-semibold whitespace-nowrap dark:text-white\">TpBooking</span>\r\n                        </a>\r\n                        <div class=\"flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse\">';\r\n\r\n                        if (!isset($_SESSION[\"userId\"])) {\r\n                            $html .= '<a href=\"/login\" class=\"text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800\">Connexion</a>';\r\n                        } else {\r\n                            $html .= '\r\n                            <form method=\"POST\" action=\"/logout\">\r\n                                <input type=\"submit\" value=\"Déconnexion\" class=\"text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800\"/>\r\n                            </form>\r\n                            ';\r\n                        }\r\n                        \r\n                        $html .=    \r\n                        '<button data-collapse-toggle=\"navbar-sticky\" type=\"button\" class=\"inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600\" aria-controls=\"navbar-sticky\" aria-expanded=\"false\">\r\n                            <span class=\"sr-only\">Open main menu</span>\r\n                            <svg class=\"w-5 h-5\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 17 14\">\r\n                                <path stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M1 1h15M1 7h15M1 13h15\"/>\r\n                            </svg>\r\n                        </button>\r\n                        </div>\r\n                        <div class=\"items-center justify-between hidden w-full md:flex md:w-auto md:order-1\" id=\"navbar-sticky\">\r\n                        <ul class=\"flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700\">\r\n                            <li>\r\n                            <a href=\"/home\" class=\"block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500\" aria-current=\"page\">Accueil</a>\r\n                            </li>\r\n                            <li>\r\n                            <a href=\"/rent\" class=\"block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700\">Louer</a>\r\n                            </li>\r\n                            <li>\r\n                            <a href=\"/sell\" class=\"block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700\">Vendre</a>\r\n                            </li>\r\n                            <li>\r\n                            <a href=\"/register\" class=\"block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700\">Inscription</a>\r\n                            </li>\r\n                            <li>\r\n                            <a href=\"/messages\" class=\"block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700\">Messages</a>\r\n                            </li>\r\n                        </ul>\r\n                        </div>\r\n                        </div>\r\n                        </nav>\r\n\r\n            ';\r\n\r\n            return $html;\r\n        }\r\n    }\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/view/navigation.php b/view/navigation.php
+--- a/view/navigation.php	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/view/navigation.php	(date 1705846532486)
+@@ -13,6 +13,7 @@
+                         <script src="https://cdn.tailwindcss.com"></script>
+                         -->
+                         <link rel="stylesheet" href="/assets/css/flowbite.css" />
++                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+ 
+                     </head>
+                     <body>
+Index: view/filtres/MainFiltres.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/view/filtres/MainFiltres.php b/view/payment/PayementScreen.php
+rename from view/filtres/MainFiltres.php
+rename to view/payment/PayementScreen.php
+--- a/view/filtres/MainFiltres.php	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/view/payment/PayementScreen.php	(date 1705846832091)
+@@ -1,0 +1,13 @@
++<?php
++
++class PayementScreen
++{
++	public function render(): string
++	{
++		return '
++			 <section class="bg-gray-50 dark:bg-gray-900">
++			 	zqdqdzqdzqdzdzqdzqzd
++			 </section>
++		';
++	}
++}
+Index: view/AnnouncePage.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?php\r\n\r\ninclude_once(\"Template.php\");\r\n\r\nclass AnnouncePage extends Template {\r\n    public function render($context) : string {\r\n\r\n        $html = '\r\n            <section class=\"bg-gray-50 dark:bg-gray-900\">\r\n                <div class=\"flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0\">\r\n                    <div class=\"p-6 space-y-4 md:space-y-6 sm:p-8\">\r\n                        <div class=\"flex justify-center flex-col items-center\">\r\n                            <img src=\"../assets/images/'.$context['announce']->image.'\" class=\"h-auto max-w-lg rounded-lg\"/>\r\n                            <div class=\"flex flex-row mt-3\">\r\n                            '.$this->autorization($context).'\r\n                            </div>\r\n                        </div>\r\n                        <h5 class=\"mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white\">'.$context['announce']->emplacement.'</h5>\r\n                        <p class=\"font-normal text-gray-700 dark:text-gray-400\">'.$context['announce']->description.'</p>\r\n                        <div class=\"flex justify-end items-end pt-5\">\r\n                        <p class=\"font-normal font-bold tracking-tight dark:text-white text-center\">'.$context['announce']->prix.'€/nuit</p>\r\n                    </div>\r\n                    <a href=\"/home\" class=\"text-white items-start bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800\">Retour</a>\r\n                </div>\r\n            </section>\r\n        ';\r\n    \r\n        return $html;\r\n    }\r\n\r\n    public function autorization($context) {\r\n        $authorization = \"\";\r\n        $context['announce']->animaux ? \r\n            $authorization .= '\r\n                <span class=\"bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-green-400 border border-gray-500 \">\r\n                    Animaux\r\n                </span>'\r\n            : $authorization .= '\r\n                <span class=\"bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-red-400 border border-gray-500 \">\r\n                    Animaux\r\n                </span>';\r\n        $context['announce']->enfants ? \r\n            $authorization .= '\r\n                <span class=\"bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-green-400 border border-gray-500 \">\r\n                    Enfants\r\n                </span>'\r\n            : $authorization .= '\r\n                <span class=\"bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-red-400 border border-gray-500 \">\r\n                    Enfants\r\n                </span>';\r\n        $context['announce']->accessibilite ? \r\n            $authorization .= '\r\n                <span class=\"bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-green-400 border border-gray-500 \">\r\n                    Accessibilite\r\n                </span>'\r\n            : $authorization .= '\r\n                <span class=\"bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-red-400 border border-gray-500 \">\r\n                    Accessibilite\r\n                </span>';\r\n        return $authorization;\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/view/AnnouncePage.php b/view/AnnouncePage.php
+--- a/view/AnnouncePage.php	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/view/AnnouncePage.php	(date 1705847144459)
+@@ -17,12 +17,62 @@
+                         </div>
+                         <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">'.$context['announce']->emplacement.'</h5>
+                         <p class="font-normal text-gray-700 dark:text-gray-400">'.$context['announce']->description.'</p>
+-                        <div class="flex justify-end items-end pt-5">
+-                        <p class="font-normal font-bold tracking-tight dark:text-white text-center">'.$context['announce']->prix.'€/nuit</p>
+-                    </div>
++                        <div class="flex justify-end items-end pt-5 flex-row">
++                        	<p class="font-normal font-bold tracking-tight dark:text-white text-center">'.$context['announce']->prix.'€/nuit</p>
++                    	</div>
++					</div>
++					
++					<div class="p-4 rounded shadow-md mb-4 max-w-screen-xl w-full text-white">
++						<form
++							method="post"
++							class="flex justify-center flex-col mb-10"
++							action="/announce/book/"
++							id="book-form">
++							
++							<div class="grid grid-cols-4 gap-4">
++								<div class="relative col-start-1 col-end-4">
++									<div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
++										<!-- Replace with Flowbite date picker icon -->
++										<span class="iconify" data-icon="feather:calendar" data-inline="false"></span>
++									</div>
++									
++									<input
++										type="text"
++										id="datePicker"
++										name="dateRange"
++										placeholder="Réservation"
++										class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
++								</div>
++								
++								<button
++									type="submit"
++									class="col-start-4 col-end-5 text-white mx-auto w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
++									Louer !
++								</button>
++							</div>
++						</form>
++					</div>
++                    	
+                     <a href="/home" class="text-white items-start bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Retour</a>
+                 </div>
+             </section>
++            
++            <script>
++            
++            let now = new Date()
++            let today = now.getFullYear() + "-" + now.getMonth() + "-" + now.getDate()
++            
++            document.addEventListener("DOMContentLoaded", function() {
++				// Instantiation du date picker
++				const datePicker = flatpickr("#datePicker", {
++					mode: "range",
++					//Mise des dates désactivées
++					disable: JSON.parse(localStorage.getItem("disabled")),
++					minDate: today,
++					dateFormat: "d/m/Y",
++				});
++			});
++			</script>
+         ';
+     
+         return $html;
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"019b3a77-825f-4abe-851f-c9cf50676039\" name=\"Changes\" comment=\"[+] filters V1\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/app/db/Connect.php\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/app/db/Connect.php\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/model/AnnouncesModel.php\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/model/AnnouncesModel.php\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/view/AnnouncesPage.php\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/view/AnnouncesPage.php\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"ComposerSettings\" synchronizationState=\"SYNCHRONIZE\">\r\n    <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>\r\n    <execution />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"JavaScript File\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"MarkdownSettingsMigration\">\r\n    <option name=\"stateVersion\" value=\"1\" />\r\n  </component>\r\n  <component name=\"PhpWorkspaceProjectConfiguration\" interpreter_name=\"C:\\src\\php-8.3.0\\php.exe\">\r\n    <include_path>\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/polyfill-mbstring\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/console\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/polyfill-php83\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/polyfill-intl-normalizer\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/polyfill-intl-grapheme\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/var-dumper\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/http-foundation\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/polyfill-php80\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/voku/portable-ascii\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/polyfill-ctype\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/translation-contracts\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/carbonphp/carbon-doctrine-types\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/mime\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/service-contracts\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/string\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/polyfill-php72\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/translation\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/polyfill-intl-idn\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/doctrine/inflector\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/process\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/nesbot/carbon\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/illuminate/support\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/illuminate/contracts\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/illuminate/collections\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/illuminate/pipeline\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/illuminate/macroable\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/illuminate/conditionable\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/composer\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/psr/simple-cache\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/psr/clock\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/psr/container\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/spatie/flare-client-php\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/spatie/backtrace\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/spatie/ignition\" />\r\n      <path value=\"$PROJECT_DIR$/vendor/symfony/deprecation-contracts\" />\r\n    </include_path>\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;customColor&quot;: &quot;&quot;,\r\n  &quot;associatedIndex&quot;: 1\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2ap4tsKlwK8PUPHfpkqJqQ0nJ14\" />\r\n  <component name=\"ProjectLevelVcsManager\">\r\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\r\n  </component>\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,\r\n    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;main&quot;,\r\n    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,\r\n    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,\r\n    &quot;php.override.implement.member.chooser.php.doc&quot;: &quot;NONE&quot;,\r\n    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;\r\n  },\r\n  &quot;keyToStringList&quot;: {\r\n    &quot;DatabaseDriversLRU&quot;: [\r\n      &quot;mysql&quot;\r\n    ]\r\n  }\r\n}</component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-php-predefined-ba97393d7c68-b4dcf6bb9de9-com.jetbrains.php.sharedIndexes-PS-233.13135.108\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"019b3a77-825f-4abe-851f-c9cf50676039\" name=\"Changes\" comment=\"\" />\r\n      <created>1705002404673</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1705002404673</updated>\r\n      <workItem from=\"1705002408449\" duration=\"7304000\" />\r\n      <workItem from=\"1705138586193\" duration=\"17377000\" />\r\n      <workItem from=\"1705224937675\" duration=\"12977000\" />\r\n      <workItem from=\"1705347771152\" duration=\"6338000\" />\r\n      <workItem from=\"1705522090977\" duration=\"4288000\" />\r\n      <workItem from=\"1705741784508\" duration=\"18132000\" />\r\n      <workItem from=\"1705764850943\" duration=\"644000\" />\r\n      <workItem from=\"1705779289177\" duration=\"1034000\" />\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"[+] messages V1\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1705158642319</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1705158642319</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00002\" summary=\"[+] filters V1\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1705765486001</created>\r\n      <option name=\"number\" value=\"00002\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1705765486001</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"3\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n  <component name=\"Vcs.Log.History.Properties\">\r\n    <option name=\"COLUMN_ID_ORDER\">\r\n      <list>\r\n        <option value=\"Default.Root\" />\r\n        <option value=\"Default.Author\" />\r\n        <option value=\"Default.Date\" />\r\n        <option value=\"Default.Subject\" />\r\n        <option value=\"Space.CommitStatus\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <option name=\"ADD_EXTERNAL_FILES_SILENTLY\" value=\"true\" />\r\n    <MESSAGE value=\"[+] messages V1\" />\r\n    <MESSAGE value=\"[+] filters V1\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"[+] filters V1\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 03fd405dcd924cc1bc1f10f7567a1465cbd6e026)
++++ b/.idea/workspace.xml	(date 1705930613461)
+@@ -4,11 +4,20 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="019b3a77-825f-4abe-851f-c9cf50676039" name="Changes" comment="[+] filters V1">
++    <list default="true" id="019b3a77-825f-4abe-851f-c9cf50676039" name="Changes" comment="[+] filters V1.1 (equipments OK)">
++      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/tp_booking.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tp_booking.iml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/app/db/Connect.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/db/Connect.php" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/app/interfaces/RoutesInterfaces.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/interfaces/RoutesInterfaces.php" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/controller/AnnounceController.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/AnnounceController.php" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/controller/Controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/Controller.php" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/model/AnnouncesModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/AnnouncesModel.php" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/view/AnnouncesPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/AnnouncesPage.php" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/view/AnnouncePage.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/AnnouncePage.php" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/view/filtres/MainFiltres.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/payment/PayementScreen.php" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/view/footer.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/footer.php" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/view/navigation.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/navigation.php" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/view/payment/index.php" beforeDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -28,6 +37,20 @@
+   </component>
+   <component name="Git.Settings">
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
++  </component>
++  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
++  "lastFilter": {
++    "state": "OPEN",
++    "assignee": "ViartFelix"
++  }
++}]]></component>
++  <component name="GithubPullRequestsUISettings">
++    <option name="selectedUrlAndAccountId">
++      <UrlAndAccount>
++        <option name="accountId" value="f9784cd1-d8d6-4fb0-b416-dfdd77843171" />
++        <option name="url" value="https://github.com/Yannis-Alouache/tpBooking.git" />
++      </UrlAndAccount>
++    </option>
+   </component>
+   <component name="MarkdownSettingsMigration">
+     <option name="stateVersion" value="1" />
+@@ -127,7 +150,11 @@
+       <workItem from="1705522090977" duration="4288000" />
+       <workItem from="1705741784508" duration="18132000" />
+       <workItem from="1705764850943" duration="644000" />
+-      <workItem from="1705779289177" duration="1034000" />
++      <workItem from="1705779289177" duration="1300000" />
++      <workItem from="1705827705085" duration="16204000" />
++      <workItem from="1705913731766" duration="2087000" />
++      <workItem from="1705919276886" duration="739000" />
++      <workItem from="1705928022297" duration="2585000" />
+     </task>
+     <task id="LOCAL-00001" summary="[+] messages V1">
+       <option name="closed" value="true" />
+@@ -145,7 +172,15 @@
+       <option name="project" value="LOCAL" />
+       <updated>1705765486001</updated>
+     </task>
+-    <option name="localTasksCounter" value="3" />
++    <task id="LOCAL-00003" summary="[+] filters V1.1 (equipments OK)">
++      <option name="closed" value="true" />
++      <created>1705782866694</created>
++      <option name="number" value="00003" />
++      <option name="presentableId" value="LOCAL-00003" />
++      <option name="project" value="LOCAL" />
++      <updated>1705782866694</updated>
++    </task>
++    <option name="localTasksCounter" value="4" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+@@ -177,6 +212,7 @@
+     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+     <MESSAGE value="[+] messages V1" />
+     <MESSAGE value="[+] filters V1" />
+-    <option name="LAST_COMMIT_MESSAGE" value="[+] filters V1" />
++    <MESSAGE value="[+] filters V1.1 (equipments OK)" />
++    <option name="LAST_COMMIT_MESSAGE" value="[+] filters V1.1 (equipments OK)" />
+   </component>
+ </project>
+\ No newline at end of file
+diff --git a/view/payment/index.php b/view/payment/index.php
+deleted file mode 100644

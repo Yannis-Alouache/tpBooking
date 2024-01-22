@@ -9,7 +9,7 @@ interface RoutesInterface
     /**
      * vas retourner les sous-routes du controller. Contenu de la fonction à copier-coller:
      * ```php
-     * <?php
+     *
      * public function getInnerRoutes(): array
      * {
      *      return controller::ROUTES

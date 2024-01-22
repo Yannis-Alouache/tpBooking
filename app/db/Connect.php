@@ -16,9 +16,8 @@ class Connect
     private PDO $connect;
 
 
-    function __construct()
+    private function __construct()
     {
-
     }
 
     public static function getInstance(): Connect

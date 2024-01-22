@@ -13,6 +13,7 @@
                         <script src="https://cdn.tailwindcss.com"></script>
                         -->
                         <link rel="stylesheet" href="/assets/css/flowbite.css" />
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
                     </head>
                     <body>

@@ -5,10 +5,15 @@ include_once("Template.php");
 class AnnouncesPage extends Template {
     public function render($context) : string {
 
+
+		$status =  $this->renderStatus();
+
         $html = '
             <section class="bg-gray-50 dark:bg-gray-900 py-5">
+            	'. $status .'
             	
 				<div class="p-4 dark:bg-gray-800 rounded shadow-md mb-4 max-w-screen-xl w-full text-white mx-auto">
+				
 				'.$this->renderFilters($context["filters"], $context["equip"]).'
 				</div>
             	
@@ -136,6 +141,7 @@ class AnnouncesPage extends Template {
 		$preEnd = DateTime::createFromFormat("Y-m-d", $filtres->end)->format('m-d-Y');
 
 		$start = DateTime::createFromFormat("Y-m-d", $filtres->start)->format('m-d-Y');
+
 		$end = ($preEnd === '01-01-2100'
 			? ""
 			: $preEnd
@@ -144,7 +150,6 @@ class AnnouncesPage extends Template {
 		return '
 		<input
 			id="filterToggle"
-			checked
 			class="peer hidden cursor-pointer"
 			type="checkbox">
 		<label
@@ -347,4 +352,26 @@ class AnnouncesPage extends Template {
 	}
 
 
+	private function renderStatus(): string
+	{
+		$html = '';
+
+		$barColor = "bg-gray-500";
+
+		if(isset($_SESSION["messageBook"]))
+		{
+			$barColor = $_SESSION["messageBook"]["status"] === true ? 'bg-green-700' : 'bg-red-500';
+			$message = $_SESSION["messageBook"]["message"];
+
+			$html = '
+			<div class="mx-auto w-1/3 '. $barColor .' text-white p-5 my-5 rounded rounded-5">
+				'. $message .'
+			</div>
+			';
+
+			unset($_SESSION["messageBook"]);
+		}
+
+		return $html;
+	}
 }
