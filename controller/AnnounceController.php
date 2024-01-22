@@ -36,7 +36,22 @@ class AnnounceController extends Controller
             ->find($this->announceID)
             ->get();
 
-        return $this->render(array("announce" => $announceData));
+        $comments = new CommentModel();
+
+        $getComments = $comments->getCommentsByAnnounce($this->announceID);
+
+        $comments->reset();
+        $uniqueAnnounce->reset();
+
+        $owner = $uniqueAnnounce->getOwnerOfThisAnnounce($this->announceID);
+
+        return $this->render(array("announce" => $announceData, "comments" => $getComments, "owner" => $owner));
+    }
+
+    public function getOwner() {
+        $owner = new UserModel();
+
+        $owerOfAnnounce = $owner->find($this->announceID);
     }
 
     public function render($context = []) {
