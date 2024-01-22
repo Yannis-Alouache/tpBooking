@@ -15,11 +15,25 @@ class UserModel extends Model
         parent::__construct($this->tableName, $this->primaryKey);
     }
 
-    public function validateEmail($email) {
+    public function unsetUserData()
+    {
+        if (session_status() === PHP_SESSION_NONE)
+            session_start();
+
+        unset($_SESSION['userId']);
+        unset($_SESSION['userFullName']);
+        unset($_SESSION['userEmail']);
+        unset($_SESSION['userAdmin']);
+        unset($_SESSION["recipientID"]);
+    }
+
+    public function validateEmail($email) : bool
+    {
         return preg_match('/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/', $email) === 1;
     }
 
-    public function deleteUser($userId) {
+    public function deleteUser($userId)
+    {
         $announces = new AnnouncesModel();
         $reservations = new ReservationModel();
         $avis = new CommentModel();
