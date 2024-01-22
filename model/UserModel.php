@@ -27,9 +27,17 @@ class UserModel extends Model
         unset($_SESSION["recipientID"]);
     }
 
-    public function validateEmail($email) : bool
-    {
+    public function validateEmail($email) {
         return preg_match('/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/', $email) === 1;
+    }
+
+    public function validatePhoneNumber($phone) {
+        return preg_match('/^(?:(?:(?:\+|00)33[ ]?(?:\(0\)[ ]?)?)|0){1}[1-9]{1}([ .-]?)(?:\d{2}\1?){3}\d{2}$/', $phone) === 1;
+    }
+
+    // Minimum eight characters, at least one letter and one number:
+    public function validatePassword($password) {
+        return preg_match('/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/', $password) === 1;
     }
 
     public function deleteUser($userId)
