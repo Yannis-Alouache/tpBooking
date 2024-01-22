@@ -49,7 +49,6 @@ class UserModel extends Model
         $messages = new MessagesModel();
         $equipementAnnonce = new EquipementAnnonceModel();
 
-
         $avis
             ->where("idUtilisateur", $userId, "=")
             ->delete()
@@ -120,6 +119,33 @@ class UserModel extends Model
             ->where("idUtilisateur", $userId, "=")
             ->delete()
             ->get();
+        $reservations->reset();
+
+        $announcesToDelete = $announces
+            ->where("idUtilisateur", $userId, "=")
+            ->get();
+        $announces->reset();
+
+        if (gettype($announcesToDelete) == 'object')
+        {
+            $reservations
+                ->where("idAnnonce", $announcesToDelete->idAnnonce, "=")
+                ->delete()
+                ->get();
+            $reservations->reset();
+        }
+        else 
+        {
+            for ($i=0; $i < count($announcesToDelete); $i++) { 
+                $reservations
+                    ->where("idAnnonce", $announcesToDelete[$i]->idAnnonce, "=")
+                    ->delete()
+                    ->get();
+
+                $reservations->reset();
+            }
+        }
+
         $announces
             ->where("idUtilisateur", $userId, "=")
             ->delete()
