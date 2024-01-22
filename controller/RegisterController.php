@@ -29,20 +29,6 @@ class RegisterController extends Controller
         echo $this->navigation->render($context) . $this->registerPage->render($context) . $this->footer->render($context);
     }
 
-
-    public function validateEmail($email) {
-        return preg_match('/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/', $email) === 1;
-    }
-
-    public function validatePhoneNumber($phone) {
-        return preg_match('/^(?:(?:(?:\+|00)33[ ]?(?:\(0\)[ ]?)?)|0){1}[1-9]{1}([ .-]?)(?:\d{2}\1?){3}\d{2}$/', $phone) === 1;
-    }
-
-    // Minimum eight characters, at least one letter and one number:
-    public function validatePassword($password) {
-        return preg_match('/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/', $password) === 1;
-    }
-
     public function doRegister() {
         $firstName = $_POST["prenom"];
         $lastName = $_POST["nom"];
@@ -53,6 +39,8 @@ class RegisterController extends Controller
         $zipCode = $_POST["cp"];
         $city = $_POST["ville"];
         $password = $_POST["motdepasse"];
+
+        $user = new UserModel();
         
         if (!isset($_POST['voyageur'])) $traveler = false;
         else $traveler = true;
@@ -65,12 +53,12 @@ class RegisterController extends Controller
             return $this->render(array("error" => "Vous devez avoir au moins 18 ans."));
         }
 
-        if ( !$this->validateEmail($email) )
+        if ( !$user->validateEmail($email) )
         {
             return $this->render(array("error" => "Vous devez saisir une adresse mail valide."));
         }
 
-        if ( !$this->validatePhoneNumber($phone) )
+        if ( !$user->validatePhoneNumber($phone) )
         {
             return $this->render(array("error" => "Vous devez saisir numéro de téléphone valide."));
 
@@ -81,7 +69,7 @@ class RegisterController extends Controller
             return $this->render(array("error" => "Vous devez saisir un code postal valide."));
         }
 
-        if ( !$this->validatePassword($password) )
+        if ( !$user->validatePassword($password) )
         {
             return $this->render(array("error" => "Vous devez saisir un mot de passe valide. (1 lettre, 1 chiffre, minimum 8 caractères)"));
         }
@@ -91,7 +79,6 @@ class RegisterController extends Controller
             return $this->render(array("error" => "Vous devez choisir entre être un hote ou un locataire."));
         }
 
-        $user = new UserModel();
         $user->create([
             "nom" => $lastName,
             "prenom " => $firstName,

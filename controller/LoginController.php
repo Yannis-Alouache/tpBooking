@@ -30,20 +30,15 @@ class LoginController extends Controller
         $this->footer = new Footer();
     }
 
-    public function validateEmail($email) {
-        return preg_match('/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/', $email) === 1;
-    }
-
     public function doLogin() {
         $email = $_POST["email"];
         $password = $_POST["password"];
+        $user = new UserModel();
 
-        if ( !$this->validateEmail($email) )
+        if ( !$user->validateEmail($email) )
         {
             return $this->render(array("error" => "Vous devez saisir une adresse mail valide."));
         }
-
-        $user = new UserModel();
 
         $userData = $user
             ->where("email", $email, "=")
@@ -56,7 +51,7 @@ class LoginController extends Controller
         if (password_verify($password, $userData->motdepasse)) {
             if (session_status() === PHP_SESSION_NONE)
                 session_start();
-            $_SESSION["userId"] = $userData->idUtilisateur;
+            $_SESSION["userId"] = $userData->idUtilisateur;     
             $_SESSION["userFullName"] = $userData->nom . " " . $userData->prenom;
             $_SESSION["userEmail"] = $userData->email;
             $_SESSION["userAdmin"] = $userData->admin;
