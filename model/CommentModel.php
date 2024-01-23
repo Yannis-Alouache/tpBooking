@@ -32,7 +32,7 @@ class CommentModel extends Model
 		$comment = new $this;
 
 		$average = $comment
-			->avg("Note")
+			->avg("Note","moyenne")
 			->get();
 
 		return $average;

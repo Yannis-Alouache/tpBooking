@@ -20,6 +20,7 @@ class AnnounceController extends Controller
 		"book/cc@POST" => "bookByCC",
 		"book/transfer@POST" => "bookByTransfer",
 		"book/@POST" => "bookScreen",
+		"comment/@POST"=>"postAComment",
     );
 
     public function __construct() {
@@ -60,12 +61,17 @@ class AnnounceController extends Controller
 
         $owner = $uniqueAnnounce->getOwnerOfThisAnnounce($this->announceID);
 
+		$uniqueAnnounce->reset();
+
         $averageRating = $comments->averageRating($this->announceID);
 
-        // $equipments = $uniqueAnnounce->getEquipmentByAnnounce($this->announceID);
+		$comments->reset();
 
-        return $this->render(array("announce" => $announceData, "comments" => $getComments, "owner" => $owner, "rating" => $averageRating));
-    
+		$liste_equipment = new ListeEquipementModel();
+
+        // $equipments = $liste_equipment->getEquipmentByAnnounce($this->announceID);
+
+        return $this->render(array("announce" => $announceData, "comments" => $getComments, "owner" => $owner, "rating" => $averageRating, "disabled"=>$disabledDates));
     }
 
 
@@ -73,19 +79,20 @@ class AnnounceController extends Controller
     public function postAComment() {
         $comments = new CommentModel();
 
+		date_default_timezone_set('Europe/Paris');
+
         if(isset($_SESSION['userId'])){
-            $userID = $_SESSION['userId'];
-        } else {
-            $userID = 0;
+            $comments->create([
+				'idAnnonce' => $_GET['id'],
+				'idUtilisateur'=> $_SESSION['userId'],
+				'Commentaires' => $_POST['comment'],
+				'Note' => $_POST['rate'],
+				'dateAvis' => date('Y-m-d H:i:s'),
+			])
+			->get();
         }
 
-        $comments->create([
-			'idAnnonce' => $_GET['id'],
-			'idUtilisateur'=> $userID,
-			'Commentaires' => $_POST['comment'],
-			'Note' => $_POST['rate'],
-			'dateAvis' => "NOW()",
-		]);
+		header("Location: /announce/?id=".$_GET['id']);
     }
 
 

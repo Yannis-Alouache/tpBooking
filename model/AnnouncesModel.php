@@ -495,28 +495,4 @@ class AnnouncesModel extends Model
 	{
 		return $this->dayRegex;
 	}
-
-	public function getEquipmentByAnnounce(int $id){
-		$announce = new $this;
-
-		$equipmentsList = $announce
-		->select(["CodeEquipement"])
-		->join("annonce","idAnnonce","equipementannonce","idAnnonce")
-		->where("idAnnonce","=",$id)
-		->get();
-
-		$equipementModel = new ListeEquipementModel();
-
-		$equipments = [];
-
-		foreach($equipmentsList as $equip) {
-			$equipments .= $equipementModel
-			->select(["LibelleEquipement"])
-			->join("equipementannonce","CodeEquipement","liste_equipement","CodeEquipement")
-			->where("CodeEquipement","=", $equip)
-			->get();
-		}
-
-		return $equipments;
-	}
 }

@@ -61,13 +61,13 @@ class AnnouncePage extends Template {
                     <a href="/home" class="text-white items-start bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Retour</a>
                     <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                     <h3 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Commentaires</h3>
-                    <div class="font-bold text-sm dark:text-gray-400">
-                        Note Moyenne de cette location : ***<span class="iconify inline text-yellow-300" data-icon="material-symbols:award-star-outline"></span>
+                    <div class="font-bold text-sm dark:text-white">
+                        Note Moyenne de cette location : '.$context['rating']->moyenne.'<span class="iconify inline text-yellow-300" data-icon="material-symbols:award-star-outline"></span>
                     </div>
                         '.$this->comments($context).'
                     </div>
                     <hr>
-                    <form class="space-y-4 md:space-y-6" action="/announce/?id='.$_GET['id'].'" method="POST">
+                    <form class="space-y-4 md:space-y-6" action="/announce/comment/?id='.$_GET['id'].'" method="POST">
                     <div class="d-flex flex-col">
                             '.$this->postingComments($context).'
                     </div>
