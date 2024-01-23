@@ -9,7 +9,7 @@ class AnnouncesPage extends Template {
 		$status =  $this->renderStatus();
 
         $html = '
-            <section class="bg-gray-50 dark:bg-gray-900 py-5">
+            <section class="bg-gray-50 dark:bg-gray-900 py-5 min-h-screen">
             	'. $status .'
             	
 				<div class="p-4 dark:bg-gray-800 rounded shadow-md mb-4 max-w-screen-xl w-full text-white mx-auto">

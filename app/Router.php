@@ -11,7 +11,20 @@ class Router
     {
         $this->setUrl($_SERVER["REQUEST_URI"]);
         $this->setHttpMethod($_SERVER['REQUEST_METHOD']);
-        $this->checkRoutes();
+
+		if($_ENV["APP_ENV"] === 'development')
+		{
+			$this->checkRoutes();
+		}
+		else {
+			try {
+				//Check des routes
+				$this->checkRoutes();
+			} catch (Exception $e) {
+				//Ecran erreur 500 si une erreur se passe.
+				self::serverError();
+			}
+		}
     }
 
     /**
@@ -34,23 +47,29 @@ class Router
             //Séparation de l'URL actuelle
             $explodeUrl = explode("/",$this->getUrl());
 
+			if(empty($explodeUrl[0]))
+			{
+				array_shift($explodeUrl);
+			}
+
             //Si la route n'a pas encore été trouvée et si la première portion de la route (dans controller.php) correspond à l'URL actuelle
             if(in_array($route,$explodeUrl) && !$isRouteFound)
             {
-                //Appel su controller et check des routes
+                //Appel du controller et check des routes
                 $this->callController($controller);
 
                 $isRouteFound = true;
             }
+
         }
 
         //affichage de la page 404 si pas de route trouvée
-        if(!$isRouteFound) $this->fallBack();
+        if($isRouteFound === false) self::fallBack();
     }
 
     /**
-     * vas appeller le controlleur demandé, et checker les sous-routes
-     * @param string $controller Le controlleur à appeller
+     * Vas appeler le controlleur demandé, et checker les sous-routes
+     * @param string $controller Le controlleur à appeler
      */
     private function callController($controller): void
     {
@@ -80,7 +99,6 @@ class Router
 			$subUrl = "/".$subUrl;
 		}
 
-
         /** @var bool $isSubRouteFound Sert à vois si la sous-route a été trouvée ou non */
         $isSubRouteFound = false;
 
@@ -98,7 +116,7 @@ class Router
             }
         }
 
-		if($isSubRouteFound === false) $this->fallBack();
+		if($isSubRouteFound === false) self::fallBack();
     }
 
     /**
@@ -155,14 +173,20 @@ class Router
 			$finalSubRoute = "/".$finalSubRoute;
 		}
 
+
 		//Retour si la sous-route de l'URL et la sous-route du controlleur match.
         return $finalSubUrl === $finalSubRoute;
     }
 
     public static function fallBack(): void
     {
-        include './view/404.php';
+        include './view/errors/404.php';
     }
+
+	public static function serverError(): void
+	{
+		include './view/errors/500.php';
+	}
 
     public function setUrl(string $url): void
     {

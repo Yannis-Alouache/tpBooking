@@ -100,9 +100,10 @@ class AnnouncesModel extends Model
 	 */
 	public function applyFilters(stdClass $filters): bool|array|stdClass|null
 	{
-		$query = $this;
+		$query = $this
+			->where("annonce.idAnnonce", 0, ">=");
 
-		if($filters->isEnfant === true) 	$query->where("annonce.enfants", 1);
+		if($filters->isEnfant === true) 	$query->andWhere("annonce.enfants", 1);
 		if($filters->isAnimaux === true) 	$query->andWhere("annonce.animaux", 1);
 		if($filters->isAccessible === true) $query->andWhere("annonce.accessibilite", 1);
 

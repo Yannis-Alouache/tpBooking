@@ -24,7 +24,6 @@ abstract class Controller //implements RoutesInterface
 	abstract public function render();
 
 	private static array $routes = array(
-		"home" => AnnouncesController::class,
 		"announce" => AnnounceController::class,
 		"login" => LoginController::class,
 		"register" => RegisterController::class,
@@ -38,7 +37,9 @@ abstract class Controller //implements RoutesInterface
 		"delete-announce" => DeleteAnnounceController::class,
 		"comment-list" => CommentListController::class,
 		"delete-comment" => DeleteCommentController::class,
-		"sell" => RentController::class
+		"sell" => RentController::class,
+		"home" => AnnouncesController::class,
+		"" => AnnouncesController::class,
 	);
 
 	public static function getRoutes(): array

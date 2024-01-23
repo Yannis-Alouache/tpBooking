@@ -4,25 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="019b3a77-825f-4abe-851f-c9cf50676039" name="Changes" comment="[+] filters V1.1 (equipments OK)">
-      <change afterPath="$PROJECT_DIR$/view/payment/PayementScreen.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/tp_booking.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tp_booking.iml" afterDir="false" />
+    <list default="true" id="019b3a77-825f-4abe-851f-c9cf50676039" name="Changes" comment="[+] fixes and additions">
+      <change afterPath="$PROJECT_DIR$/view/errors/404.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/view/errors/500.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/Router.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Router.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/db/Connect.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/db/Connect.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/interfaces/RoutesInterfaces.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/interfaces/RoutesInterfaces.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/AnnounceController.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/AnnounceController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controller/Controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/Controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controller/TestController.php" beforeDir="false" afterPath="$PROJECT_DIR$/controller/TestController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model/AnnouncesModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/AnnouncesModel.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/ReservationModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/model/ReservationModel.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/AnnouncePage.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/AnnouncePage.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/404.php" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/view/AnnouncesPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/AnnouncesPage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/filtres/MainFiltres.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/footer.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/footer.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/navigation.php" beforeDir="false" afterPath="$PROJECT_DIR$/view/navigation.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view/payment/index.php" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +23,9 @@
   </component>
   <component name="ComposerSettings" synchronizationState="SYNCHRONIZE">
     <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
-    <execution />
+    <execution>
+      <executable path="composer" />
+    </execution>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -119,6 +113,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/proj_esgi/tp_booking/view/errors&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -133,6 +128,14 @@
     ]
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\proj_esgi\tp_booking\view\errors" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\proj_esgi\tp_booking\view\errors" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -160,7 +163,8 @@
       <workItem from="1705913731766" duration="2087000" />
       <workItem from="1705919276886" duration="739000" />
       <workItem from="1705928022297" duration="12071000" />
-      <workItem from="1705951393335" duration="11668000" />
+      <workItem from="1705951393335" duration="11845000" />
+      <workItem from="1705992893413" duration="4770000" />
     </task>
     <task id="LOCAL-00001" summary="[+] messages V1">
       <option name="closed" value="true" />
@@ -186,7 +190,15 @@
       <option name="project" value="LOCAL" />
       <updated>1705782866694</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="[+] fixes and additions">
+      <option name="closed" value="true" />
+      <created>1705963257960</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1705963257960</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -219,6 +231,7 @@
     <MESSAGE value="[+] messages V1" />
     <MESSAGE value="[+] filters V1" />
     <MESSAGE value="[+] filters V1.1 (equipments OK)" />
-    <option name="LAST_COMMIT_MESSAGE" value="[+] filters V1.1 (equipments OK)" />
+    <MESSAGE value="[+] fixes and additions" />
+    <option name="LAST_COMMIT_MESSAGE" value="[+] fixes and additions" />
   </component>
 </project>
