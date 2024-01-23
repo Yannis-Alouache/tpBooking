@@ -20,7 +20,7 @@ class Router
      */
     private function checkRoutes(): void
     {
-        /** @var bool sert à route fallback pour si une a été trouvée ou non */
+        /** @var bool $isRouteFound sert à route fallback pour si une a été trouvée ou non */
         $isRouteFound = false;
 
         //Itération dans les routes du controlleur général
@@ -50,29 +50,38 @@ class Router
 
     /**
      * vas appeller le controlleur demandé, et checker les sous-routes
-     * @param $controller Le controlleur à appeller
+     * @param string $controller Le controlleur à appeller
      */
     private function callController($controller): void
     {
         /**  @suppressWarnings @var ControllerInstance l'instance du controlleur invoqué */
         $controllerInstance = new $controller();
+
         /** @var string[]|string Les/La sous-route(s) à checker contenues dans le controlleur invoqué  */
         $subRoutes = $controllerInstance->getInnerRoutes();
 
         /** @var string[]|string séparation de l'URL actuelle entre / et prise de la sous-route */
         $explodeUrl = array_slice(explode("/",$this->getUrl()),2);
+
+
         /** @var string La sous-route actuelle de l'URL */
         $subUrl = "";
 
         //Des fois, il n'y a qu'une seule portion de sous-route, et peut créer des erreurs car ce n'est pas un tableau.
-        if(isset($explodeUrl[0]))
+        if(isset($explodeUrl[0]) && !isset($explodeUrl[1]))
         {
             $subUrl = $explodeUrl[0];
         } else {
-            $subUrl = $explodeUrl;
+            $subUrl = implode("/", $explodeUrl);
         }
 
-        /** @var bool Sert à vois si la sous-route a été trouvée ou non */
+		if(!str_starts_with($subUrl, "/"))
+		{
+			$subUrl = "/".$subUrl;
+		}
+
+
+        /** @var bool $isSubRouteFound Sert à vois si la sous-route a été trouvée ou non */
         $isSubRouteFound = false;
 
         //Itération dans les sous-routes du controller invoqué
@@ -88,6 +97,8 @@ class Router
                 $this->callControllerMethod($controllerInstance,$controllerMethod);
             }
         }
+
+		if($isSubRouteFound === false) $this->fallBack();
     }
 
     /**
@@ -98,13 +109,14 @@ class Router
     private function checkHttpMethod(string $route, string $method): bool
     {
         $routeHttp = explode("@",$route)[1];
+
         return strtolower($method) === strtolower($routeHttp);
     }
 
     /**
-     * appelle la méthode du controlleur avec la route matchée
-     * @param $controller Le controlleur avec la méthode à appeller
-     * @param $method La méthode à utiliser
+     * Appelle la méthode du controlleur avec la route matchée
+     * @param string $controller Le controlleur avec la méthode à appeller
+     * @param string $method La méthode à utiliser
 	 * @return void
      */
     private function callControllerMethod($controller, $method): void
@@ -114,18 +126,20 @@ class Router
         );
     }
 
-    /**
-     * vas checker si lma sous-route du controlleurcorrespond à la sous-route de l'URL
-     * @var mixed $subRouteMethod
-     */
+	/**
+	 * vas checker si lma sous-route du controlleur correspond à la sous-route de l'URL
+	 * @param mixed $subRouteMethod
+	 * @param mixed $subUrl
+	 * @return bool
+	 */
     private function checkSubRoute(mixed $subRouteMethod, mixed $subUrl): bool
     {
 
-		//Unification/normalisation de la sous-URL acutelle
+		//Unification/normalisation de la sous-URL actuelle
 		$finalSubUrl = $subUrl;
 
 		//Quand la route est (par ex) "/register/", la sous-URL est un tableau vide. Je le convertis donc en string vide, car se sont les mêmes routes (à un '/' près)
-		if(gettype($subUrl) === 'array' && count($subUrl) === 0)
+		if((gettype($subUrl) === 'array' && count($subUrl) === 0))
 		{
 			$finalSubUrl = "";
 		}
@@ -133,8 +147,13 @@ class Router
 		//Unification/normalisation de la sous-route du controlleur
 		//Séparation de la sous-route et de sa méthode
 		$separatedRoute = explode("@",$subRouteMethod);
-		//Si la sous-route est isset, alors je la donne à la varible pour la comparer à la route de l'URL. Sinon, je donne ce que l'explode m'a donné, au cas-ou.
+		//Si la sous-route est isset, alors je la donne à la variable pour la comparer à la route de l'URL. Sinon, je donne ce que l'explode m'a donné, au cas-ou.
 		$finalSubRoute = $separatedRoute[0] ?? $separatedRoute;
+
+		if(!str_starts_with($finalSubRoute,"/"))
+		{
+			$finalSubRoute = "/".$finalSubRoute;
+		}
 
 		//Retour si la sous-route de l'URL et la sous-route du controlleur match.
         return $finalSubUrl === $finalSubRoute;

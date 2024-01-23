@@ -269,10 +269,10 @@ class TestController extends Controller
   }
 </style>
 		";
-		echo '<section class="bg-white dark:bg-gray-900 w-full text-white min-h-screen flex items-center justify-center">';
+		echo '<section class="bg-gray-900 w-full text-white min-h-screen flex items-center justify-center">';
 		
 		echo '
-		<div class="container mx-auto mt-8 flex justify-center dark:bg-gray-900 text-white">
+		<div class="container mx-auto mt-8 flex justify-center bg-gray-900 text-white">
 		
 			<!-- Step 1: Payment Options -->
 		  	<div class="w-3/4 p-8 bg-dark-900 text-white">
@@ -395,8 +395,6 @@ class TestController extends Controller
 					bankForm.style.display = bankTransfer.checked ? 'block' : 'none';
 				}
 			});
-			
-			
 		</script>";
 		echo $this->footer->render([]);
 	}
