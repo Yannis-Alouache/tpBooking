@@ -1,6 +1,6 @@
 <?php
 
-class Main404
+class Main500
 {
 
 	public Navigation $navigation;
@@ -28,4 +28,4 @@ class Main404
 	}
 }
 
-new Main404();
+new Main500();
