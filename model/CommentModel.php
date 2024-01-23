@@ -27,4 +27,14 @@ class CommentModel extends Model
 
 		return $allComments;
 	}
+
+	public function averageRating(int $id) {
+		$comment = new $this;
+
+		$average = $comment
+			->avg("Note")
+			->get();
+
+		return $average;
+	}
 }

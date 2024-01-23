@@ -23,9 +23,18 @@ class AnnouncePage extends Template {
                     </div>
                     <a href="/home" class="text-white items-start bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Retour</a>
                     <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-                    <h3 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Commentaires</h5>
+                    <h3 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Commentaires</h3>
+                    <div class="font-bold text-sm dark:text-gray-400">
+                        Note Moyenne de cette location : ***<span class="iconify inline text-yellow-300" data-icon="material-symbols:award-star-outline"></span>
+                    </div>
                         '.$this->comments($context).'
                     </div>
+                    <hr>
+                    <form class="space-y-4 md:space-y-6" action="/announce/?id='.$_GET['id'].'" method="POST">
+                    <div class="d-flex flex-col">
+                            '.$this->postingComments($context).'
+                    </div>
+                    </form>
                 </div>
             </section>
         ';
@@ -85,4 +94,58 @@ class AnnouncePage extends Template {
         }
         return $html;
     }
+
+    public function postingComments() {
+        $html = '';
+        if(isset($_SESSION['userId'])) {
+            $html .= '
+            <div>
+            <label for="comment" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Poster un commentaire</label>
+            <textarea name="comment" id="comment" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Très jolie maison..." required></textarea>
+            <label for="rate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Donner une note</label>
+            <select id="rate" name="rate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            </select>
+            </div>
+            <button type="submit" class="w-100 mt-3 text-white bg-blue-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:hover:bg-primary-700 dark:focus:ring-primary-800">Publier le Commentaire</button>';
+        } else {
+            $html .= '
+            <label for="comment" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Poster un commentaire</label>
+            <textarea name="comment" id="comment" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Ne pas crier le soir..." disabled></textarea>
+            <label for="rate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Donner une note</label>
+            <select id="rate" name="rate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            </select>
+            <p class="text-red-600">Vous devez être connecté pour poster un commentaire.</p>
+            <button type="submit" class="w-100 mt-3 text-white bg-blue-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:hover:bg-primary-700 dark:focus:ring-primary-800" disabled>Publier le Commentaire</button>';
+        }
+
+        return $html;
+    }
+
+    // TODO LISTE EQUIPEMENT
+    // public function getEquipments($context) {
+    //     $html = '';
+    //     if($context['equipment'] instanceof stdClass){
+    //         foreach ($context['equipment'] as $equip) {
+    //             $html .= '
+    //             <span class="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-red-400 border border-gray-500 ">
+    //                 '.$equip.'
+    //             </span>';
+    //         }
+    //     } else if ($context['equipment']) {
+    //         $html .= '';
+    //     } else {
+    //         $html .= '';
+    //     }
+    //     return $html;
+    // }
 }

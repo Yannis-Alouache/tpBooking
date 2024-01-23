@@ -10,4 +10,8 @@ class ListeEquipementModel extends Model
 		parent::__construct($this->tableName, $this->primaryKey);
 	}
 
+	public function getAllEquipment() {
+		return $this->get();
+	}
+
 }

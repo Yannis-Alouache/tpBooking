@@ -15,7 +15,7 @@ class RentController extends Controller
     public RentPage $doRent;
 
     private const ROUTES = array(
-        "@GET" => "render",
+        "@GET" => "initializeCreation",
         "@POST" => "doRent",
     );
 
@@ -34,45 +34,66 @@ class RentController extends Controller
         echo $this->navigation->render($context) . $this->doRent->render($context) . $this->footer->render($context);
     }
 
+    public function initializeCreation() {
+        $equipment = new ListeEquipementModel();
+        $getAllEquipment = $equipment->getAllEquipment();
+        $this->render(array("equipment" => $getAllEquipment));
+    }
+
     public function doRent() {
+        $equipment = new ListeEquipementModel();
+        $getAllEquipment = $equipment->getAllEquipment();
+
         $disponibility_start = $_POST["disponibilite_debut"];
-        $disponibilite_end = $_POST["disponibilite_fin"];
+        $disponibility_end = $_POST["disponibilite_fin"];
         $emplacement = $_POST["emplacement"];
         $prix = $_POST["prix"];
         $description = $_POST["description"];
-        $image = $_POST["image"];
-        $_POST["animaux"] ? $animals = true : $animals = false;
-        $_POST["enfants"] ? $children = true : $children = false;
-        $_POST["accessibilite"] ? $accessibility = true : $accessibility = false;
-        $equipment = $_POST["equipement"]; //TODO
-        $rules = $_POST["regles"]; //TODO
+
+        // TODO IMPORT IMAGE
+        // $image = $_POST["image"];
+        // $extension = pathinfo($image, PATHINFO_EXTENSION);
+        // $new_name = $disponibility_start."_".$disponibilite_end."_".$prix;
+        // $chemin_stockage = '../assets/images/' . $new_name . "." . $extension;
+        // $temporary_path = $_POST['image'];
+        // move_uploaded_file($temporary_path,$chemin_stockage);
+
+        isset($_POST["animaux"]) ? $animals = $_POST["animaux"] : $animals = 0;
+        isset($_POST["enfants"]) ? $children = $_POST["enfants"] : $children = 0;
+        isset($_POST["accessibilite"]) ? $accessibility = $_POST["accessibilite"] : $accessibility = 0;
+        isset($_POST["equipement"]) ? $equipment = $_POST["equipement"] : $equipment = [];
+        $rules = $_POST["regles"];
 
         $currentDateTime = new DateTime('now');
 
-        if ( $disponibilite_end<$currentDateTime )
-        {
-            return $this->render(array("error" => "Vous devez saisir une date de fin de disponibilité supérieure à la date du jour."));
+        // TODO ERREUR DATES
+        // if ( $disponibilite_end<$currentDateTime || $disponibility_start<$currentDateTime )
+        // {
+        //     return $this->render(array("error" => "Vous devez saisir une date de disponibilité supérieure à la date du jour.","equipment" => $getAllEquipment));
+        // }
 
-        }
+        
 
-        // $announce = new AnnouncesModel();
-        // $announce->create([
-        //     "nom" => $lastName,
-        //     "prenom " => $firstName,
-        //     "adresse" => $adress,
-        //     "email" => $email,
-        //     "age" => $age,
-        //     "code_postal" => $zipCode,
-        //     "ville" => $city,
-        //     "telephone" => $phone,
-        //     "hote" => intval($host),
-        //     "voyageur" => intval($traveler),
-        //     "admin" => intval(false),
-        //     "motdepasse" => password_hash( $password, PASSWORD_DEFAULT )
-        // ])
-        // ->get();
+        $announce = new AnnouncesModel();
+        $announce->create([
+            "idUtilisateur" => $_SESSION['userId'],
+            "disponibilite_debut" => date_create_from_format("Y-m-d", $disponibility_start),
+            "disponibilite_fin " => date_create_from_format("Y-m-d", $disponibility_end),
+            "emplacement" => $emplacement,
+            "prix" => intval($prix),
+            "description" => $description,
+            "image" => "",
+            "animaux" => intval($animals),
+            "enfants" => intval($children),
+            "accessibilite" => intval($accessibility),
+            // "CodeEquipement" => intval($equipment),
+            // "regle" => $rules,
+        ])
+        ->get();
 
-        return $this->render(array("success" => "Votre annonce a bien été créé !"));
+        $latest = $announce->latest();
+
+        return $this->render(array("success" => "Votre annonce a bien été créé !", "equipment" => $getAllEquipment, "latest" => $latest));
     }
 
     public function getInnerRoutes(): array

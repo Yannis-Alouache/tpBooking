@@ -69,11 +69,15 @@ class RentPage extends Template {
                         </div>
                         <div>
                             <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
-                            <input type="textarea" name="description" id="description" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Appartement bien éclairé..." required>
+                            <textarea name="description" id="description" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Appartement bien éclairé..." required></textarea>
                         </div>
                         <div>
-                            <label for="image" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Image (Format acceptés : .png , .jpg , .jpeg)</label>
-                            <input type="file" name="image" id="image" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
+                            <label for="regles" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Règles</label>
+                            <textarea name="regles" id="regles" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Ne pas crier le soir..." required></textarea>
+                        </div>
+                        <div>
+                            <label for="image" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Image (Format acceptés : .jpg)</label>
+                            <input type="file" name="image" id="image" accept=".jpg, .jpeg, .png" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
                         </div>
 
                         <div class="flex items-start">
@@ -102,8 +106,20 @@ class RentPage extends Template {
                                 <label for="accessibilite" class="font-light text-gray-500 dark:text-gray-300">Mon bien est accessible aux personnes à mobilité réduites</label>
                             </div>
                         </div>
+
+                        <div class="ml-3 text-sm mt-4">
+                            <label for="equipment" class="font-light text-gray-500 dark:text-gray-300">Équipement Disponibles :</label>
+                        </div>
+                        <div>
+                        <label for="countries_multiple" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Selectionner les équipements disponibles</label>
+                        <select multiple id="equipement" name="equipement[]"
+                        class="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        '.$this->getEquipment($context).'
+                        </select>
+                        </div>
                         <button type="submit" class="w-full text-white bg-blue-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:hover:bg-primary-700 dark:focus:ring-primary-800">Publier mon annonce</button>
                     </form>
+                    <p>'.$this->getLatest($context).'</p>
                 </div>
             </div>
         </div>
@@ -114,6 +130,25 @@ class RentPage extends Template {
 
         return $html;
     } 
+
+    public function getEquipment($context) {
+        $html = '';
+        if(isset($context['equipment'])){
+            foreach ($context['equipment'] as $equipment) {
+                $html .= '
+                    <option value="'.$equipment->CodeEquipement.'">'.$equipment->LibelleEquipement.'</option>
+                ';
+            }
+        }
+        return $html;
+    }
+
+    public function getLatest($context) {
+        if(isset($context['latest'])){
+            return $context['latest'];
+        }
+        return "";
+    }
 }
 
 ?>

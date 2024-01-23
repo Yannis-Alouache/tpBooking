@@ -16,6 +16,7 @@ class AnnounceController extends Controller
 
     private const ROUTES = array(
         "@GET" => "getAnnounceByID",
+        "@POST" => "postAComment"
     );
 
     public function __construct() {
@@ -45,8 +46,32 @@ class AnnounceController extends Controller
 
         $owner = $uniqueAnnounce->getOwnerOfThisAnnounce($this->announceID);
 
-        return $this->render(array("announce" => $announceData, "comments" => $getComments, "owner" => $owner));
+        $averageRating = $comments->averageRating($this->announceID);
+
+        // $equipments = $uniqueAnnounce->getEquipmentByAnnounce($this->announceID);
+
+        return $this->render(array("announce" => $announceData, "comments" => $getComments, "owner" => $owner, "rating" => $averageRating));
     }
+
+    public function postAComment() {
+        $comments = new CommentModel();
+
+        if(isset($_SESSION['userId'])){
+            $userID = $_SESSION['userId'];
+        } else {
+            $userID = 0;
+        }
+
+        $comments->create([
+			'idAnnonce' => $_GET['id'],
+			'idUtilisateur'=> $userID,
+			'Commentaires' => $_POST['comment'],
+			'Note' => $_POST['rate'],
+			'dateAvis' => "NOW()",
+		]);
+    }
+
+
 
     public function render($context = []) {
         echo $this->navigation->render($context) . $this->AnnouncePage->render($context) . $this->footer->render($context);
