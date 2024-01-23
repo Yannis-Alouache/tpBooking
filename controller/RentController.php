@@ -41,11 +41,13 @@ class RentController extends Controller
     }
 
     public function doRent() {
+        date_default_timezone_set('Europe/Paris');
+
         $equipment = new ListeEquipementModel();
         $getAllEquipment = $equipment->getAllEquipment();
 
-        $disponibility_start = $_POST["disponibilite_debut"];
-        $disponibility_end = $_POST["disponibilite_fin"];
+        $disponibility_start = DateTime::createFromFormat('d/m/Y', $_POST["disponibilite_debut"]);
+        $disponibility_end = DateTime::createFromFormat('d/m/Y', $_POST["disponibilite_fin"]);
         $emplacement = $_POST["emplacement"];
         $prix = $_POST["prix"];
         $description = $_POST["description"];
@@ -58,11 +60,11 @@ class RentController extends Controller
         // $temporary_path = $_POST['image'];
         // move_uploaded_file($temporary_path,$chemin_stockage);
 
-        isset($_POST["animaux"]) ? $animals = $_POST["animaux"] : $animals = 0;
-        isset($_POST["enfants"]) ? $children = $_POST["enfants"] : $children = 0;
-        isset($_POST["accessibilite"]) ? $accessibility = $_POST["accessibilite"] : $accessibility = 0;
+        isset($_POST["animaux"]) ? $animals = 1 : $animals = 0;
+        isset($_POST["enfants"]) ? $children = 1 : $children = 0;
+        isset($_POST["accessibilite"]) ? $accessibility = 1 : $accessibility = 0;
         isset($_POST["equipement"]) ? $equipment = $_POST["equipement"] : $equipment = [];
-        $rules = $_POST["regles"];
+        $addRules = $_POST["regles"];
 
         $currentDateTime = new DateTime('now');
 
@@ -73,12 +75,12 @@ class RentController extends Controller
         // }
 
         
-
+            var_dump($disponibility_start);
         $announce = new AnnouncesModel();
         $announce->create([
             "idUtilisateur" => $_SESSION['userId'],
-            "disponibilite_debut" => date_create_from_format("Y-m-d", $disponibility_start),
-            "disponibilite_fin " => date_create_from_format("Y-m-d", $disponibility_end),
+            "disponibilite_debut" => $disponibility_start->format('Y-m-d'),
+            "disponibilite_fin " => $disponibility_end->format('Y-m-d'),
             "emplacement" => $emplacement,
             "prix" => intval($prix),
             "description" => $description,
@@ -86,14 +88,33 @@ class RentController extends Controller
             "animaux" => intval($animals),
             "enfants" => intval($children),
             "accessibilite" => intval($accessibility),
-            // "CodeEquipement" => intval($equipment),
-            // "regle" => $rules,
         ])
         ->get();
 
-        $latest = $announce->latest();
+        $announce->reset();
 
-        return $this->render(array("success" => "Votre annonce a bien été créé !", "equipment" => $getAllEquipment, "latest" => $latest));
+        $idAnnounce = $announce->latest();
+
+        $announce->reset();
+
+        $rule = new ReglesModel();
+
+        $rule->create([
+            "idAnnonce"=> $idAnnounce->idAnnonce,
+            "regle"=> $addRules,
+        ])->get();
+
+        $equipmentsModel = new EquipementAnnonceModel();
+
+        foreach ($equipment as $thisequipment) {
+            $equipmentsModel->create([
+                "idAnnonce"=> $idAnnounce->idAnnonce,
+                "CodeEquipement"=>$thisequipment,
+            ])->get();
+            $equipmentsModel->reset();
+        }
+
+        return $this->render(array("success" => "Votre annonce a bien été créé !", "equipment" => $getAllEquipment));
     }
 
     public function getInnerRoutes(): array
