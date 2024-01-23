@@ -74,8 +74,6 @@ class RentController extends Controller
         //     return $this->render(array("error" => "Vous devez saisir une date de disponibilité supérieure à la date du jour.","equipment" => $getAllEquipment));
         // }
 
-        
-            var_dump($disponibility_start);
         $announce = new AnnouncesModel();
         $announce->create([
             "idUtilisateur" => $_SESSION['userId'],
