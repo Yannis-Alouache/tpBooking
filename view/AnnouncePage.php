@@ -62,7 +62,7 @@ class AnnouncePage extends Template {
                     <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                     <h3 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Commentaires</h3>
                     <div class="font-bold text-sm dark:text-white">
-                        Note Moyenne de cette location : '.$context['rating']->moyenne.'<span class="iconify inline text-yellow-300" data-icon="material-symbols:award-star-outline"></span>
+                        Note Moyenne de cette location : '.round($context['rating']->moyenne,1).'<span class="iconify inline text-yellow-300" data-icon="material-symbols:award-star-outline"></span>
                     </div>
                         '.$this->comments($context).'
                     </div>
