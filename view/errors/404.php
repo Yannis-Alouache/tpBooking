@@ -28,4 +28,4 @@ class Main404
 	}
 }
 
-new Main404();
+new Main500();
